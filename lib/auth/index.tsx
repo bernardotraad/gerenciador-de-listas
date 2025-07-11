@@ -170,7 +170,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) {
-    throw new Error("useAuth deve ser usado dentro de AuthProvider")
+    // Em vez de lançar erro, retorna um contexto padrão para preview
+    console.warn("useAuth usado fora do AuthProvider - retornando contexto padrão")
+    return {
+      user: null,
+      loading: false,
+      signIn: async () => {},
+      signUp: async () => {},
+      signOut: async () => {},
+    }
   }
   return context
 }

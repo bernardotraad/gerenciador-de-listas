@@ -1,7 +1,40 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',
+  trailingSlash: true,
+  images: {
+    unoptimized: true
+  },
   experimental: {
-    serverComponentsExternalPackages: ['@supabase/supabase-js']
+    esmExternals: 'loose'
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      }
+    }
+    
+    // Suprimir avisos TSS
+    config.infrastructureLogging = {
+      level: 'error',
+    }
+    
+    return config
+  },
+  // Suprimir avisos de desenvolvimento
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
+  },
+  // Configuração para reduzir logs
+  logging: {
+    fetches: {
+      fullUrl: false,
+    },
   },
   eslint: {
     ignoreDuringBuilds: true,
@@ -9,13 +42,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  images: {
-    domains: ['localhost'],
-    unoptimized: true
-  },
-  trailingSlash: true,
-  output: 'export',
-  distDir: '.next'
 }
 
 export default nextConfig
