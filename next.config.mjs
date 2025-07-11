@@ -8,7 +8,8 @@ const nextConfig = {
   experimental: {
     esmExternals: 'loose'
   },
-  webpack: (config, { isServer }) => {
+  // Configuração para suprimir completamente os logs TSS
+  webpack: (config, { dev, isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -18,29 +19,38 @@ const nextConfig = {
       }
     }
     
-    // Suprimir avisos TSS
-    config.infrastructureLogging = {
-      level: 'error',
+    // Suprimir todos os logs de webpack em desenvolvimento
+    if (dev) {
+      config.infrastructureLogging = {
+        level: 'none',
+      }
+      config.stats = 'none'
     }
     
     return config
   },
-  // Suprimir avisos de desenvolvimento
-  onDemandEntries: {
-    maxInactiveAge: 25 * 1000,
-    pagesBufferLength: 2,
-  },
-  // Configuração para reduzir logs
+  // Desabilitar logs do Next.js
   logging: {
     fetches: {
       fullUrl: false,
     },
+  },
+  // Configuração para reduzir ainda mais os logs
+  onDemandEntries: {
+    maxInactiveAge: 60 * 1000,
+    pagesBufferLength: 5,
   },
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  // Suprimir avisos específicos
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error']
+    } : false,
   },
 }
 

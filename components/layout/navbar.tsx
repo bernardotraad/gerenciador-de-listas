@@ -1,221 +1,193 @@
 "use client"
 
+import { useState } from "react"
+import Link from "next/link"
+import { useAuth } from "@/lib/auth"
+import { useSiteSettings } from "@/hooks/use-site-settings"
+import { usePermissions } from "@/hooks/use-permissions"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { useAuth } from "@/lib/auth"
-import { usePermissions } from "@/hooks/use-permissions"
-import { useSiteSettings } from "@/hooks/use-site-settings"
-import { ROLE_LABELS } from "@/lib/constants"
-import { Calendar, Home, LogOut, Settings, Send, Menu, UserCheck, BarChart3, User } from "lucide-react"
-import Link from "next/link"
-import { useRouter, usePathname } from "next/navigation"
-import { useState } from "react"
+import { Menu, User, LogOut, Settings, Shield, Users, Calendar, CheckCircle, List, BarChart3, Home } from "lucide-react"
 
 export function Navbar() {
-  const { user, signOut } = useAuth()
-  const { siteName } = useSiteSettings()
-  const permissions = usePermissions()
-  const router = useRouter()
-  const pathname = usePathname()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { user, signOut, loading } = useAuth()
+  const { settings } = useSiteSettings()
+  const { canManageUsers, canManageEvents, canViewLogs } = usePermissions()
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleSignOut = async () => {
-    await signOut()
-    router.push("/login")
+    try {
+      await signOut()
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error)
+    }
   }
 
-  const isActivePath = (path: string) => {
-    return pathname === path || (path !== "/" && pathname.startsWith(path))
-  }
+  const navigationItems = [
+    { href: "/dashboard", label: "Dashboard", icon: Home, show: !!user },
+    { href: "/events", label: "Eventos", icon: Calendar, show: !!user && canManageEvents },
+    { href: "/guest-lists", label: "Listas", icon: List, show: !!user },
+    { href: "/check-in", label: "Check-in", icon: CheckCircle, show: !!user },
+    { href: "/admin", label: "Admin", icon: Shield, show: !!user && canManageUsers },
+    { href: "/users", label: "Usuários", icon: Users, show: !!user && canManageUsers },
+    { href: "/logs", label: "Logs", icon: BarChart3, show: !!user && canViewLogs },
+    { href: "/settings", label: "Configurações", icon: Settings, show: !!user && canManageUsers },
+  ]
 
-  const NavLink = ({ href, children, icon: Icon, onClick }: any) => (
-    <Link href={href} onClick={onClick}>
-      <Button
-        variant={isActivePath(href) ? "secondary" : "ghost"}
-        size="sm"
-        className={`w-full justify-start h-12 text-base ${isActivePath(href) ? "bg-secondary" : ""}`}
-      >
-        <Icon className="w-5 h-5 mr-3" />
-        {children}
-      </Button>
-    </Link>
-  )
-
-  const closeMobileMenu = () => setMobileMenuOpen(false)
+  const visibleItems = navigationItems.filter((item) => item.show)
 
   return (
-    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo/Title */}
           <div className="flex items-center space-x-4">
-            {/* Site Title */}
             <Link
               href={user ? "/dashboard" : "/enviar-nomes"}
               className="text-xl font-bold hover:text-primary transition-colors"
             >
-              {siteName || "Sistema de Gestão"}
+              {settings?.site_name || "Sistema de Gestão"}
             </Link>
-
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex space-x-1">
-              {permissions.canSendNames && (
-                <Link href="/enviar-nomes">
-                  <Button variant={isActivePath("/enviar-nomes") ? "secondary" : "ghost"} size="sm" className="h-10">
-                    <Send className="w-4 h-4 mr-2" />
-                    Enviar Nomes
-                  </Button>
-                </Link>
-              )}
-
-              {user && permissions.canViewDashboard && (
-                <Link href="/dashboard">
-                  <Button variant={isActivePath("/dashboard") ? "secondary" : "ghost"} size="sm" className="h-10">
-                    <Home className="w-4 h-4 mr-2" />
-                    Dashboard
-                  </Button>
-                </Link>
-              )}
-
-              {permissions.canViewEvents && (
-                <Link href="/events">
-                  <Button variant={isActivePath("/events") ? "secondary" : "ghost"} size="sm" className="h-10">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Eventos
-                  </Button>
-                </Link>
-              )}
-
-              {permissions.canCheckIn && (
-                <Link href="/check-in">
-                  <Button variant={isActivePath("/check-in") ? "secondary" : "ghost"} size="sm" className="h-10">
-                    <UserCheck className="w-4 h-4 mr-2" />
-                    Check-in
-                  </Button>
-                </Link>
-              )}
-
-              {(permissions.canManageUsers || permissions.canAccessSettings) && (
-                <Link href="/admin">
-                  <Button variant={isActivePath("/admin") ? "secondary" : "ghost"} size="sm" className="h-10">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Administração
-                  </Button>
-                </Link>
-              )}
-            </div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            {/* Mobile Menu */}
-            <div className="lg:hidden">
-              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-10 w-10 p-0">
-                    <Menu className="h-5 w-5" />
-                    <span className="sr-only">Abrir menu</span>
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-[300px] sm:w-[350px]">
-                  <div className="flex flex-col space-y-2 mt-6">
-                    {permissions.canSendNames && (
-                      <NavLink href="/enviar-nomes" icon={Send} onClick={closeMobileMenu}>
-                        Enviar Nomes
-                      </NavLink>
-                    )}
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-6">
+            {visibleItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
 
-                    {user && permissions.canViewDashboard && (
-                      <NavLink href="/dashboard" icon={Home} onClick={closeMobileMenu}>
-                        Dashboard
-                      </NavLink>
-                    )}
-
-                    {permissions.canViewEvents && (
-                      <NavLink href="/events" icon={Calendar} onClick={closeMobileMenu}>
-                        Eventos
-                      </NavLink>
-                    )}
-
-                    {permissions.canCheckIn && (
-                      <NavLink href="/check-in" icon={UserCheck} onClick={closeMobileMenu}>
-                        Check-in
-                      </NavLink>
-                    )}
-
-                    {permissions.canViewLogs && (
-                      <NavLink href="/logs" icon={BarChart3} onClick={closeMobileMenu}>
-                        Relatórios
-                      </NavLink>
-                    )}
-
-                    {(permissions.canManageUsers || permissions.canAccessSettings) && (
-                      <NavLink href="/admin" icon={Settings} onClick={closeMobileMenu}>
-                        Administração
-                      </NavLink>
-                    )}
-
-                    {/* User info and logout in mobile */}
-                    {user && (
-                      <div className="pt-4 border-t">
-                        <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg mb-3">
-                          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                            <User className="w-5 h-5 text-primary-foreground" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-sm">{user.name}</div>
-                            <div className="text-xs text-muted-foreground">{ROLE_LABELS[user.role]}</div>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start h-12"
-                          onClick={() => {
-                            handleSignOut()
-                            closeMobileMenu()
-                          }}
-                        >
-                          <LogOut className="w-4 h-4 mr-3" />
-                          Sair
-                        </Button>
-                      </div>
-                    )}
-
-                    {/* Login button in mobile when not logged in */}
-                    {!user && (
-                      <div className="pt-4 border-t">
-                        <Link href="/login" onClick={closeMobileMenu}>
-                          <Button className="w-full h-12">
-                            <User className="w-4 h-4 mr-3" />
-                            Fazer Login
-                          </Button>
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-
+          {/* Right Side */}
+          <div className="flex items-center space-x-4">
             <ThemeToggle />
 
-            {user ? (
+            {loading ? (
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            ) : user ? (
               <>
-                <div className="hidden sm:flex flex-col items-end">
-                  <span className="text-sm font-medium truncate max-w-[120px]">{user.name}</span>
-                  <span className="text-xs text-muted-foreground">{ROLE_LABELS[user.role]}</span>
+                {/* Desktop User Menu */}
+                <div className="hidden md:block">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback>{user.name?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="end" forceMount>
+                      <div className="flex items-center justify-start gap-2 p-2">
+                        <div className="flex flex-col space-y-1 leading-none">
+                          <p className="font-medium">{user.name}</p>
+                          <p className="text-xs text-muted-foreground">{user.email}</p>
+                          <Badge variant={user.role === "admin" ? "default" : "secondary"} className="w-fit">
+                            {user.role === "admin" ? "Admin" : user.role === "portaria" ? "Portaria" : "Usuário"}
+                          </Badge>
+                        </div>
+                      </div>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/dashboard" className="cursor-pointer">
+                          <User className="mr-2 h-4 w-4" />
+                          Perfil
+                        </Link>
+                      </DropdownMenuItem>
+                      {canManageUsers && (
+                        <DropdownMenuItem asChild>
+                          <Link href="/settings" className="cursor-pointer">
+                            <Settings className="mr-2 h-4 w-4" />
+                            Configurações
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sair
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-                <Button variant="outline" size="sm" onClick={handleSignOut} className="h-10 px-3 bg-transparent">
-                  <LogOut className="w-4 h-4 md:mr-2" />
-                  <span className="hidden md:inline">Sair</span>
-                </Button>
+
+                {/* Mobile Menu */}
+                <div className="md:hidden">
+                  <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                    <SheetTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <Menu className="h-5 w-5" />
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-80">
+                      <div className="flex flex-col space-y-4">
+                        {/* User Info */}
+                        <div className="flex items-center space-x-3 pb-4 border-b">
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback>{user.name?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col">
+                            <p className="font-medium">{user.name}</p>
+                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                            <Badge variant={user.role === "admin" ? "default" : "secondary"} className="w-fit mt-1">
+                              {user.role === "admin" ? "Admin" : user.role === "portaria" ? "Portaria" : "Usuário"}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Navigation */}
+                        <div className="flex flex-col space-y-2">
+                          {visibleItems.map((item) => {
+                            const Icon = item.icon
+                            return (
+                              <Link
+                                key={item.href}
+                                href={item.href}
+                                onClick={() => setIsOpen(false)}
+                                className="flex items-center space-x-3 px-3 py-2 rounded-md hover:bg-accent transition-colors"
+                              >
+                                <Icon className="h-4 w-4" />
+                                <span>{item.label}</span>
+                              </Link>
+                            )
+                          })}
+                        </div>
+
+                        {/* Logout */}
+                        <div className="pt-4 border-t">
+                          <Button variant="ghost" onClick={handleSignOut} className="w-full justify-start">
+                            <LogOut className="mr-2 h-4 w-4" />
+                            Sair
+                          </Button>
+                        </div>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+                </div>
               </>
             ) : (
-              <Link href="/login">
-                <Button variant="outline" size="sm" className="h-10 bg-transparent">
-                  <User className="w-4 h-4 mr-2" />
-                  Entrar
+              <div className="flex items-center space-x-2">
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/enviar-nomes">Enviar Nomes</Link>
                 </Button>
-              </Link>
+                <Button asChild size="sm">
+                  <Link href="/login">Login</Link>
+                </Button>
+              </div>
             )}
           </div>
         </div>

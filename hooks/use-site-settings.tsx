@@ -1,104 +1,175 @@
 "use client"
 
-import type React from "react"
-
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
 import { supabase } from "@/lib/supabase"
 
+interface SiteSettings {
+  site_name: string
+  site_description?: string
+  contact_email?: string
+  contact_phone?: string
+  address?: string
+  logo_url?: string
+  primary_color?: string
+  secondary_color?: string
+  allow_public_submissions: boolean
+  require_approval: boolean
+  max_guests_per_submission: number
+  enable_notifications: boolean
+}
+
 interface SiteSettingsContextType {
-  siteName: string
-  setSiteName: (name: string) => Promise<void>
+  settings: SiteSettings | null
   loading: boolean
+  updateSettings: (newSettings: Partial<SiteSettings>) => Promise<void>
 }
 
 const SiteSettingsContext = createContext<SiteSettingsContextType | undefined>(undefined)
 
-export function SiteSettingsProvider({ children }: { children: React.ReactNode }) {
-  const [siteName, setSiteNameState] = useState("Casa de Show")
+export function SiteSettingsProvider({ children }: { children: ReactNode }) {
+  const [settings, setSettings] = useState<SiteSettings | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchSiteSettings()
-
-    // Listener para mudanças em tempo real
-    const subscription = supabase
-      .channel("site_settings_changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "site_settings",
-          filter: "setting_key=eq.site_name",
-        },
-        (payload) => {
-          if (payload.new && "setting_value" in payload.new) {
-            setSiteNameState(payload.new.setting_value as string)
-          }
-        },
-      )
-      .subscribe()
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [])
-
-  const fetchSiteSettings = async () => {
+  const fetchSettings = async () => {
     try {
-      const { data, error } = await supabase
-        .from("site_settings")
-        .select("setting_value")
-        .eq("setting_key", "site_name")
-        .single()
+      const { data, error } = await supabase.from("site_settings").select("*")
 
       if (error) {
         console.error("Erro ao buscar configurações:", error)
         return
       }
 
-      if (data) {
-        setSiteNameState(data.setting_value)
+      if (data && data.length > 0) {
+        // Converter array de configurações em objeto
+        const settingsObj = data.reduce((acc, setting) => {
+          acc[setting.key] = setting.value
+          return acc
+        }, {} as any)
+
+        // Converter strings para tipos apropriados
+        const processedSettings: SiteSettings = {
+          site_name: settingsObj.site_name || "Sistema de Gestão",
+          site_description: settingsObj.site_description || "",
+          contact_email: settingsObj.contact_email || "",
+          contact_phone: settingsObj.contact_phone || "",
+          address: settingsObj.address || "",
+          logo_url: settingsObj.logo_url || "",
+          primary_color: settingsObj.primary_color || "#000000",
+          secondary_color: settingsObj.secondary_color || "#666666",
+          allow_public_submissions: settingsObj.allow_public_submissions === "true",
+          require_approval: settingsObj.require_approval === "true",
+          max_guests_per_submission: Number.parseInt(settingsObj.max_guests_per_submission) || 10,
+          enable_notifications: settingsObj.enable_notifications === "true",
+        }
+
+        setSettings(processedSettings)
+      } else {
+        // Configurações padrão se não houver dados
+        setSettings({
+          site_name: "Sistema de Gestão",
+          site_description: "Sistema de gerenciamento de eventos e listas",
+          contact_email: "",
+          contact_phone: "",
+          address: "",
+          logo_url: "",
+          primary_color: "#000000",
+          secondary_color: "#666666",
+          allow_public_submissions: true,
+          require_approval: true,
+          max_guests_per_submission: 10,
+          enable_notifications: false,
+        })
       }
     } catch (error) {
-      console.error("Erro ao buscar configurações:", error)
+      console.error("Erro ao carregar configurações:", error)
+      // Configurações padrão em caso de erro
+      setSettings({
+        site_name: "Sistema de Gestão",
+        site_description: "Sistema de gerenciamento de eventos e listas",
+        contact_email: "",
+        contact_phone: "",
+        address: "",
+        logo_url: "",
+        primary_color: "#000000",
+        secondary_color: "#666666",
+        allow_public_submissions: true,
+        require_approval: true,
+        max_guests_per_submission: 10,
+        enable_notifications: false,
+      })
     } finally {
       setLoading(false)
     }
   }
 
-  const setSiteName = async (name: string) => {
+  const updateSettings = async (newSettings: Partial<SiteSettings>) => {
     try {
-      // Primeiro, tentar atualizar o registro existente
-      const { error: updateError } = await supabase
-        .from("site_settings")
-        .update({
-          setting_value: name,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("setting_key", "site_name")
+      // Converter objeto em array de configurações
+      const settingsArray = Object.entries(newSettings).map(([key, value]) => ({
+        key,
+        value: typeof value === "boolean" ? value.toString() : value?.toString() || "",
+      }))
 
-      if (updateError) {
-        console.error("Erro ao atualizar:", updateError)
-        throw updateError
+      // Atualizar cada configuração
+      for (const setting of settingsArray) {
+        const { error } = await supabase.from("site_settings").upsert(
+          {
+            key: setting.key,
+            value: setting.value,
+          },
+          {
+            onConflict: "key",
+          },
+        )
+
+        if (error) {
+          console.error(`Erro ao atualizar configuração ${setting.key}:`, error)
+        }
       }
 
-      setSiteNameState(name)
+      // Recarregar configurações
+      await fetchSettings()
     } catch (error) {
-      console.error("Erro ao atualizar nome do site:", error)
+      console.error("Erro ao atualizar configurações:", error)
       throw error
     }
   }
 
-  return (
-    <SiteSettingsContext.Provider value={{ siteName, setSiteName, loading }}>{children}</SiteSettingsContext.Provider>
-  )
+  useEffect(() => {
+    fetchSettings()
+  }, [])
+
+  const value = {
+    settings,
+    loading,
+    updateSettings,
+  }
+
+  return <SiteSettingsContext.Provider value={value}>{children}</SiteSettingsContext.Provider>
 }
 
 export const useSiteSettings = () => {
   const context = useContext(SiteSettingsContext)
   if (!context) {
-    throw new Error("useSiteSettings deve ser usado dentro de SiteSettingsProvider")
+    // Retornar contexto padrão em vez de lançar erro
+    return {
+      settings: {
+        site_name: "Sistema de Gestão",
+        site_description: "Sistema de gerenciamento de eventos e listas",
+        contact_email: "",
+        contact_phone: "",
+        address: "",
+        logo_url: "",
+        primary_color: "#000000",
+        secondary_color: "#666666",
+        allow_public_submissions: true,
+        require_approval: true,
+        max_guests_per_submission: 10,
+        enable_notifications: false,
+      },
+      loading: false,
+      updateSettings: async () => {},
+    }
   }
   return context
 }
