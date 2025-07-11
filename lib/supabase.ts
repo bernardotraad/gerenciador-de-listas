@@ -1,32 +1,45 @@
 import { createClient as baseCreateClient } from "@supabase/supabase-js"
-import type { User } from "@supabase/supabase-js"
+import type { User, Database } from "@supabase/supabase-js"
 
 /**
  * Cria um cliente Supabase público usando as variáveis de ambiente.
  * Lança um erro descritivo se as variáveis não estiverem definidas,
  * evitando o “supabaseUrl is required”.
  */
-export function createClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  if (!url || !anon) {
-    throw new Error(
-      "Variáveis de ambiente NEXT_PUBLIC_SUPABASE_URL e/or NEXT_PUBLIC_SUPABASE_ANON_KEY ausentes. " +
-        "Defina-as no painel do Netlify (Site settings → Environment variables).",
-    )
-  }
-
-  return baseCreateClient(url, anon)
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    "Missing Supabase environment variables. Please check:\n" +
+      "- NEXT_PUBLIC_SUPABASE_URL\n" +
+      "- NEXT_PUBLIC_SUPABASE_ANON_KEY\n" +
+      "Configure these in your Netlify environment variables.",
+  )
 }
+
+// Create and export the Supabase client
+export const supabase = baseCreateClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
+})
+
+// Re-export createClient for compatibility
+export const createClient = () => supabase
+
+// Export the createClient function from supabase-js for direct use
+export { baseCreateClient as createSupabaseClient } from "@supabase/supabase-js"
 
 /**
  * Cliente singleton para uso em componentes/client side.
  * É criado sob demanda na primeira chamada, depois reutilizado.
  */
-let cached: ReturnType<typeof baseCreateClient> | null = null
+let cached: typeof supabase | null = null
 export function getSupabase() {
-  if (!cached) cached = createClient()
+  if (!cached) cached = supabase
   return cached
 }
 
@@ -42,7 +55,7 @@ export function getSupabaseAdmin() {
   if (!url || !serviceKey) {
     throw new Error("SUPABASE_SERVICE_ROLE_KEY (ou URL) não definido")
   }
-  return baseCreateClient(url, serviceKey, {
+  return baseCreateClient<Database>(url, serviceKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   })
 }
@@ -152,3 +165,5 @@ export interface PublicSubmission {
   events?: Event
   event_lists?: EventList
 }
+
+export default supabase
