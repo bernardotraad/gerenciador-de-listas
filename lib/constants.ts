@@ -53,11 +53,10 @@ export const ROLES = {
 
 // Status dos eventos
 export const EVENT_STATUS = {
-  ACTIVE: "active",
-  INACTIVE: "inactive",
-  FINISHED: "finished",
   DRAFT: "draft",
   PUBLISHED: "published",
+  ACTIVE: "active",
+  FINISHED: "finished",
   CANCELLED: "cancelled",
 } as const
 
@@ -66,6 +65,9 @@ export const GUEST_STATUS = {
   PENDING: "pending",
   APPROVED: "approved",
   REJECTED: "rejected",
+  CONFIRMED: "confirmed",
+  CHECKED_IN: "checked_in",
+  NO_SHOW: "no_show",
 } as const
 
 // Cores padrão para tipos de lista
@@ -140,3 +142,5 @@ export const PAGINATION = {
   DEFAULT_PAGE_SIZE: 10,
   MAX_PAGE_SIZE: 100,
 } as const
+
+export const DEFAULT_SITE_NAME = "Sistema de Gerenciamento de Eventos"

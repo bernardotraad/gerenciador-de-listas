@@ -103,23 +103,41 @@ export function truncateText(text: string, maxLength: number): string {
 }
 
 // Função para formatar data brasileira
-export function formatDate(date: string | Date): string {
-  return new Date(date).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  })
+export function formatDate(date: Date | string | null): string {
+  if (!date) return "Data não disponível"
+
+  try {
+    const dateObj = typeof date === "string" ? new Date(date) : date
+    if (isNaN(dateObj.getTime())) return "Data inválida"
+
+    return dateObj.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
+  } catch (error) {
+    return "Data inválida"
+  }
 }
 
 // Função para formatar data e hora brasileira
-export function formatDateTime(date: string | Date): string {
-  return new Date(date).toLocaleString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
+export function formatDateTime(date: Date | string | null): string {
+  if (!date) return "Data não disponível"
+
+  try {
+    const dateObj = typeof date === "string" ? new Date(date) : date
+    if (isNaN(dateObj.getTime())) return "Data inválida"
+
+    return dateObj.toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  } catch (error) {
+    return "Data inválida"
+  }
 }
 
 // Função para gerar ID único
@@ -155,4 +173,14 @@ export function generateSlug(text: string): string {
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .trim()
+}
+
+// Função para gerar senha
+export function generatePassword(length = 12): string {
+  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
+  let password = ""
+  for (let i = 0; i < length; i++) {
+    password += charset.charAt(Math.floor(Math.random() * charset.length))
+  }
+  return password
 }
