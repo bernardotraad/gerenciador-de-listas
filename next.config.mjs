@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    serverComponentsExternalPackages: ['@supabase/supabase-js']
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -7,8 +10,12 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    domains: ['localhost'],
+    unoptimized: true
   },
+  trailingSlash: true,
+  output: 'export',
+  distDir: '.next'
 }
 
 export default nextConfig
