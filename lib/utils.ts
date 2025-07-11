@@ -104,22 +104,22 @@ export function truncateText(text: string, maxLength: number): string {
 
 // Função para formatar data brasileira
 export function formatDate(date: string | Date): string {
-  return new Intl.DateTimeFormat("pt-BR", {
+  return new Date(date).toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  }).format(new Date(date))
+  })
 }
 
 // Função para formatar data e hora brasileira
 export function formatDateTime(date: string | Date): string {
-  return new Intl.DateTimeFormat("pt-BR", {
+  return new Date(date).toLocaleString("pt-BR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(date))
+  })
 }
 
 // Função para gerar ID único

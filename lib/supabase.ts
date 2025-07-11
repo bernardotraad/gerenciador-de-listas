@@ -14,7 +14,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Re-export createClient for compatibility
-export const createSupabaseClient = createClient
+export { createClient }
 
 /**
  * Cliente singleton para uso em componentes/client side.

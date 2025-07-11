@@ -56,6 +56,9 @@ export const EVENT_STATUS = {
   ACTIVE: "active",
   INACTIVE: "inactive",
   FINISHED: "finished",
+  DRAFT: "draft",
+  PUBLISHED: "published",
+  CANCELLED: "cancelled",
 } as const
 
 // Status das listas de convidados
@@ -122,4 +125,18 @@ export const CACHE_CONFIG = {
 export const SUBMISSION_TYPES = {
   PUBLIC: "public",
   SPECIFIC_LIST: "specific_list",
+} as const
+
+// Tipos de listas
+export const LIST_TYPES = {
+  VIP: "VIP",
+  NORMAL: "Normal",
+  STAFF: "Staff",
+  IMPRENSA: "Imprensa",
+} as const
+
+// Configurações de paginação
+export const PAGINATION = {
+  DEFAULT_PAGE_SIZE: 10,
+  MAX_PAGE_SIZE: 100,
 } as const
