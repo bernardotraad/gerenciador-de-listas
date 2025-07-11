@@ -20,11 +20,28 @@ interface SiteSettings {
 
 interface SiteSettingsContextType {
   settings: SiteSettings | null
+  siteName: string
   loading: boolean
+  setSiteName: (name: string) => Promise<void>
   updateSettings: (newSettings: Partial<SiteSettings>) => Promise<void>
 }
 
 const SiteSettingsContext = createContext<SiteSettingsContextType | undefined>(undefined)
+
+const defaultSettings: SiteSettings = {
+  site_name: "Sistema de Gestão",
+  site_description: "Sistema de gerenciamento de eventos e listas",
+  contact_email: "",
+  contact_phone: "",
+  address: "",
+  logo_url: "",
+  primary_color: "#000000",
+  secondary_color: "#666666",
+  allow_public_submissions: true,
+  require_approval: true,
+  max_guests_per_submission: 10,
+  enable_notifications: false,
+}
 
 export function SiteSettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<SiteSettings | null>(null)
@@ -32,7 +49,7 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
 
   const fetchSettings = async () => {
     try {
-      const { data, error } = await supabase.from("site_settings").select("*")
+      const { data, error } = await supabase.from("site_settings").select("setting_key, setting_value")
 
       if (error) {
         console.error("Erro ao buscar configurações:", error)
@@ -42,7 +59,7 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
       if (data && data.length > 0) {
         // Converter array de configurações em objeto
         const settingsObj = data.reduce((acc, setting) => {
-          acc[setting.key] = setting.value
+          acc[setting.setting_key] = setting.setting_value
           return acc
         }, {} as any)
 
@@ -65,38 +82,12 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
         setSettings(processedSettings)
       } else {
         // Configurações padrão se não houver dados
-        setSettings({
-          site_name: "Sistema de Gestão",
-          site_description: "Sistema de gerenciamento de eventos e listas",
-          contact_email: "",
-          contact_phone: "",
-          address: "",
-          logo_url: "",
-          primary_color: "#000000",
-          secondary_color: "#666666",
-          allow_public_submissions: true,
-          require_approval: true,
-          max_guests_per_submission: 10,
-          enable_notifications: false,
-        })
+        setSettings(defaultSettings)
       }
     } catch (error) {
       console.error("Erro ao carregar configurações:", error)
       // Configurações padrão em caso de erro
-      setSettings({
-        site_name: "Sistema de Gestão",
-        site_description: "Sistema de gerenciamento de eventos e listas",
-        contact_email: "",
-        contact_phone: "",
-        address: "",
-        logo_url: "",
-        primary_color: "#000000",
-        secondary_color: "#666666",
-        allow_public_submissions: true,
-        require_approval: true,
-        max_guests_per_submission: 10,
-        enable_notifications: false,
-      })
+      setSettings(defaultSettings)
     } finally {
       setLoading(false)
     }
@@ -106,24 +97,22 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
     try {
       // Converter objeto em array de configurações
       const settingsArray = Object.entries(newSettings).map(([key, value]) => ({
-        key,
-        value: typeof value === "boolean" ? value.toString() : value?.toString() || "",
+        setting_key: key,
+        setting_value: typeof value === "boolean" ? value.toString() : value?.toString() || "",
       }))
 
       // Atualizar cada configuração
       for (const setting of settingsArray) {
         const { error } = await supabase.from("site_settings").upsert(
           {
-            key: setting.key,
-            value: setting.value,
+            setting_key: setting.setting_key,
+            setting_value: setting.setting_value,
           },
-          {
-            onConflict: "key",
-          },
+          { onConflict: "setting_key" },
         )
 
         if (error) {
-          console.error(`Erro ao atualizar configuração ${setting.key}:`, error)
+          console.error(`Erro ao atualizar configuração ${setting.setting_key}:`, error)
         }
       }
 
@@ -139,9 +128,16 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
     fetchSettings()
   }, [])
 
+  const setSiteName = async (name: string) => {
+    await updateSettings({ site_name: name })
+    setSettings((prev) => (prev ? { ...prev, site_name: name } : { ...defaultSettings, site_name: name }))
+  }
+
   const value = {
     settings,
+    siteName: settings?.site_name ?? "Sistema de Gestão",
     loading,
+    setSiteName,
     updateSettings,
   }
 
@@ -153,21 +149,10 @@ export const useSiteSettings = () => {
   if (!context) {
     // Retornar contexto padrão em vez de lançar erro
     return {
-      settings: {
-        site_name: "Sistema de Gestão",
-        site_description: "Sistema de gerenciamento de eventos e listas",
-        contact_email: "",
-        contact_phone: "",
-        address: "",
-        logo_url: "",
-        primary_color: "#000000",
-        secondary_color: "#666666",
-        allow_public_submissions: true,
-        require_approval: true,
-        max_guests_per_submission: 10,
-        enable_notifications: false,
-      },
+      settings: defaultSettings,
+      siteName: defaultSettings.site_name,
       loading: false,
+      setSiteName: async () => {},
       updateSettings: async () => {},
     }
   }
