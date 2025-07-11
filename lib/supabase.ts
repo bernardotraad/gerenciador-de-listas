@@ -1,28 +1,55 @@
-import { createClient } from "@supabase/supabase-js"
+import { createClient as baseCreateClient } from "@supabase/supabase-js"
+import type { User } from "@supabase/supabase-js"
 
-// Cliente público (pode rodar em qualquer lado)
-export const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+/**
+ * Cria um cliente Supabase público usando as variáveis de ambiente.
+ * Lança um erro descritivo se as variáveis não estiverem definidas,
+ * evitando o “supabaseUrl is required”.
+ */
+export function createClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Somente servidor ➜ cria quando PRECISAR da Service Role
+  if (!url || !anon) {
+    throw new Error(
+      "Variáveis de ambiente NEXT_PUBLIC_SUPABASE_URL e/or NEXT_PUBLIC_SUPABASE_ANON_KEY ausentes. " +
+        "Defina-as no painel do Netlify (Site settings → Environment variables).",
+    )
+  }
+
+  return baseCreateClient(url, anon)
+}
+
+/**
+ * Cliente singleton para uso em componentes/client side.
+ * É criado sob demanda na primeira chamada, depois reutilizado.
+ */
+let cached: ReturnType<typeof baseCreateClient> | null = null
+export function getSupabase() {
+  if (!cached) cached = createClient()
+  return cached
+}
+
+/**
+ * Versão com service role – use apenas em Server Components ou Route Handlers.
+ */
 export function getSupabaseAdmin() {
   if (typeof window !== "undefined" && process.env.NODE_ENV === "production") {
     throw new Error("getSupabaseAdmin deve ser chamado apenas no servidor em produção")
   }
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!serviceKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY não definido")
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey, {
+  if (!url || !serviceKey) {
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY (ou URL) não definido")
+  }
+  return baseCreateClient(url, serviceKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   })
 }
 
-// Tipos TypeScript
-export interface User {
-  id: string
-  email: string
-  name: string
-  role: "admin" | "user" | "portaria"
-  created_at: string
-}
+export type { User }
+
+/* ---- Tipos específicos do projeto permanecem inalterados ---- */
 
 export interface Event {
   id: string

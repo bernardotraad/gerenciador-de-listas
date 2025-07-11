@@ -1,5 +1,7 @@
 # 🚀 Guia de Deploy - Sistema de Gerenciamento de Eventos
 
+Este guia te ajudará a fazer o deploy do sistema no Netlify com Supabase.
+
 ## 📋 Pré-requisitos
 
 - Conta no [GitHub](https://github.com)
@@ -9,49 +11,50 @@
 
 ## 🔧 Configuração das Variáveis de Ambiente
 
-### 1. Supabase (Banco de Dados)
+### 1. Supabase (3 variáveis)
+
 1. Acesse [supabase.com](https://supabase.com)
-2. Crie um novo projeto
+2. Crie um novo projeto ou acesse um existente
 3. Vá em **Settings** → **API**
-4. Copie as seguintes informações:
-   - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
-   - **anon public key** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - **service_role key** → `SUPABASE_SERVICE_ROLE_KEY` ⚠️ (mantenha secreta)
+4. Copie os valores:
+   - **NEXT_PUBLIC_SUPABASE_URL**: Project URL
+   - **NEXT_PUBLIC_SUPABASE_ANON_KEY**: anon public key
+   - **SUPABASE_SERVICE_ROLE_KEY**: service_role key (⚠️ mantenha secreta)
 
 ### 2. Gerar NEXTAUTH_SECRET
+
 Execute no terminal:
 \`\`\`bash
-openssl rand -base64 32
+node scripts/generate-secret.js
 \`\`\`
-Ou use o script fornecido: `node scripts/generate-secret.js`
 
 ### 3. Configurar NEXTAUTH_URL
-Após o primeiro deploy, será a URL do seu site Netlify (ex: `https://seu-site.netlify.app`)
+
+Após o primeiro deploy, será a URL do seu site Netlify:
+\`\`\`
+https://seu-site.netlify.app
+\`\`\`
 
 ## 🚀 Deploy no Netlify
 
 ### Passo 1: Preparar o Repositório
+
 \`\`\`bash
-# Inicializar Git (se ainda não foi feito)
+# Clone ou baixe o projeto
 git init
-
-# Adicionar todos os arquivos
 git add .
+git commit -m "Initial commit: Sistema de Gerenciamento de Eventos"
 
-# Fazer commit
-git commit -m "feat: Sistema de Gerenciamento de Eventos completo"
-
-# Conectar com GitHub (substitua pela sua URL)
+# Conecte com seu repositório GitHub
 git remote add origin https://github.com/SEU_USUARIO/venue-management-system.git
-
-# Enviar para GitHub
 git push -u origin main
 \`\`\`
 
 ### Passo 2: Configurar no Netlify
+
 1. Acesse [netlify.com](https://netlify.com)
 2. Clique em **"New site from Git"**
-3. Conecte com **GitHub**
+3. Conecte com GitHub
 4. Selecione seu repositório
 5. Configure:
    - **Build command**: `npm run build`
@@ -59,53 +62,67 @@ git push -u origin main
    - **Node version**: `18`
 
 ### Passo 3: Adicionar Variáveis de Ambiente
+
 No painel do Netlify, vá em **Site settings** → **Environment variables** e adicione:
 
 \`\`\`env
 NEXT_PUBLIC_SUPABASE_URL=sua_url_do_supabase
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_publica
-SUPABASE_SERVICE_ROLE_KEY=sua_chave_privada
-NEXT_PUBLIC_SITE_NAME=Sistema de Eventos
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anon
+SUPABASE_SERVICE_ROLE_KEY=sua_chave_service_role
+NEXT_PUBLIC_SITE_NAME=Sistema de Gerenciamento de Eventos
 NEXTAUTH_SECRET=sua_chave_gerada
 NEXTAUTH_URL=https://seu-site.netlify.app
 \`\`\`
 
-## 🗄️ Configuração do Banco de Dados
+### Passo 4: Configurar Banco de Dados
 
-### Executar Scripts SQL no Supabase
-No painel do Supabase, vá em **SQL Editor** e execute os scripts na ordem:
+Execute os scripts SQL no Supabase **nesta ordem**:
 
-1. `scripts/01-create-tables.sql` - Criar tabelas
-2. `scripts/02-seed-data.sql` - Dados iniciais
-3. `scripts/03-update-guest-lists.sql` - Atualizar listas
-4. `scripts/04-add-public-submissions.sql` - Submissões públicas
-5. `scripts/05-add-site-settings.sql` - Configurações do site
-6. `scripts/06-fix-site-settings.sql` - Correções
-7. `scripts/07-add-portaria-role.sql` - Role de portaria
-8. `scripts/08-add-list-types.sql` - Tipos de lista
+1. `scripts/01-create-tables.sql`
+2. `scripts/02-seed-data.sql`
+3. `scripts/03-update-guest-lists.sql`
+4. `scripts/04-add-public-submissions.sql`
+5. `scripts/05-add-site-settings.sql`
+6. `scripts/06-fix-site-settings.sql`
+7. `scripts/07-add-portaria-role.sql`
+8. `scripts/08-add-list-types.sql`
+9. `scripts/09-migrate-existing-guests-fixed.sql`
 
-## ✅ Verificação Final
+## ✅ Verificação
 
-1. **Teste o login** com o usuário admin criado
-2. **Verifique as funcionalidades** principais
-3. **Teste a responsividade** mobile
-4. **Confirme as permissões** de cada role
+Após o deploy:
 
-## 🔒 Segurança
+1. ✅ Site carrega sem erros
+2. ✅ Login funciona
+3. ✅ Páginas principais acessíveis
+4. ✅ Criação de eventos funciona
+5. ✅ Sistema de permissões ativo
 
-- ✅ Variáveis sensíveis configuradas
-- ✅ HTTPS habilitado automaticamente
-- ✅ Headers de segurança configurados
-- ✅ Autenticação implementada
+## 🔧 Solução de Problemas
+
+### Build Falha
+- Verifique se todas as variáveis estão configuradas
+- Confirme que os scripts SQL foram executados
+- Verifique logs do Netlify
+
+### Erro de Autenticação
+- Confirme NEXTAUTH_URL está correto
+- Verifique chaves do Supabase
+- Teste NEXTAUTH_SECRET
+
+### Banco de Dados
+- Execute scripts na ordem correta
+- Verifique permissões RLS no Supabase
+- Confirme service_role_key
 
 ## 📞 Suporte
 
 Se encontrar problemas:
-1. Verifique os logs do Netlify
-2. Confirme as variáveis de ambiente
-3. Teste localmente primeiro
-4. Verifique a conexão com Supabase
+1. Verifique logs do Netlify
+2. Teste localmente primeiro
+3. Confirme todas as variáveis
+4. Execute scripts SQL novamente se necessário
 
 ---
 
-**🎉 Seu sistema está pronto para uso em produção!**
+**🎉 Parabéns! Seu sistema está no ar!**

@@ -1,12 +1,8 @@
-// Script para gerar NEXTAUTH_SECRET
 const crypto = require("crypto")
 
-function generateSecret() {
-  const secret = crypto.randomBytes(32).toString("base64")
-  console.log("🔑 NEXTAUTH_SECRET gerado:")
-  console.log(secret)
-  console.log("\n📋 Copie este valor para suas variáveis de ambiente")
-  return secret
-}
+// Generate a secure random secret for NEXTAUTH_SECRET
+const secret = crypto.randomBytes(32).toString("base64")
 
-generateSecret()
+console.log("🔑 NEXTAUTH_SECRET gerado:")
+console.log(secret)
+console.log("\n📋 Copie este valor e use como NEXTAUTH_SECRET nas variáveis de ambiente do Netlify")
