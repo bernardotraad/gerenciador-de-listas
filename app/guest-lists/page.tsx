@@ -46,6 +46,63 @@ import {
 import { useEffect, useState, useMemo } from "react"
 import { toast } from "sonner"
 
+// Função para formatar data com validação
+const formatDate = (dateString: string | null | undefined): string => {
+  if (!dateString) return "Data não definida"
+
+  try {
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) return "Data inválida"
+
+    return date.toLocaleDateString("pt-BR")
+  } catch {
+    return "Data inválida"
+  }
+}
+
+// Função para formatar data e hora com validação
+const formatDateTime = (dateString: string | null | undefined): string => {
+  if (!dateString) return "Data não definida"
+
+  try {
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) return "Data inválida"
+
+    return date.toLocaleString("pt-BR")
+  } catch {
+    return "Data inválida"
+  }
+}
+
+// Função para obter a data do evento ou usar fallback
+const getEventDate = (eventDate: string | null | undefined, fallbackDate: string | null | undefined): string => {
+  // Primeiro tenta usar a data do evento
+  if (eventDate) {
+    try {
+      const date = new Date(eventDate)
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString("pt-BR")
+      }
+    } catch {
+      // Continua para o fallback
+    }
+  }
+
+  // Se não tem data do evento, usa a data de criação como fallback
+  if (fallbackDate) {
+    try {
+      const date = new Date(fallbackDate)
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString("pt-BR")
+      }
+    } catch {
+      // Continua para o fallback final
+    }
+  }
+
+  return "Data não definida"
+}
+
 export default function GuestListsPage() {
   const { user } = useAuth()
   const [events, setEvents] = useState<Event[]>([])
@@ -402,7 +459,7 @@ export default function GuestListsPage() {
                     <SelectContent>
                       {events.map((event) => (
                         <SelectItem key={event.id} value={event.id}>
-                          {event.name} - {new Date(event.date).toLocaleDateString("pt-BR")}
+                          {event.name} - {formatDate(event.date)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -567,6 +624,10 @@ Carlos Ferreira
               const checkedInCount = group.guests.filter((g) => g.checked_in).length
               const totalInGroup = group.guests.length
 
+              // Usar a data do evento ou a data de criação do primeiro guest como fallback
+              const firstGuestDate = group.guests[0]?.created_at
+              const displayDate = getEventDate(group.event_date, firstGuestDate)
+
               return (
                 <Collapsible key={group.id} open={isExpanded} onOpenChange={() => toggleGroup(group.id)}>
                   <Card className="overflow-hidden">
@@ -603,9 +664,7 @@ Carlos Ferreira
                                   <Calendar className="w-4 h-4 text-muted-foreground" />
                                   <span className="font-medium">{group.event_name}</span>
                                 </div>
-                                <div className="text-muted-foreground">
-                                  {new Date(group.event_date).toLocaleDateString("pt-BR")}
-                                </div>
+                                <div className="text-muted-foreground">{displayDate}</div>
                               </div>
 
                               <div className="text-center">
@@ -660,7 +719,7 @@ Carlos Ferreira
                                           <span>{guest.event_lists.sectors?.name}</span>
                                         </div>
                                       )}
-                                      <div>Enviado em {new Date(guest.created_at).toLocaleDateString("pt-BR")}</div>
+                                      <div>Enviado em {formatDate(guest.created_at)}</div>
                                     </div>
                                   </div>
                                   <div className="text-right">
@@ -669,7 +728,7 @@ Carlos Ferreira
                                         <span className="text-green-600 font-medium text-sm">✓ Confirmado</span>
                                         {guest.checked_in_at && (
                                           <div className="text-xs text-muted-foreground">
-                                            {new Date(guest.checked_in_at).toLocaleString("pt-BR")}
+                                            {formatDateTime(guest.checked_in_at)}
                                           </div>
                                         )}
                                       </div>
@@ -724,7 +783,7 @@ Carlos Ferreira
                                           <span className="text-green-600 font-medium">✓ Confirmado</span>
                                           {guest.checked_in_at && (
                                             <div className="text-xs text-muted-foreground">
-                                              {new Date(guest.checked_in_at).toLocaleString("pt-BR")}
+                                              {formatDateTime(guest.checked_in_at)}
                                             </div>
                                           )}
                                         </div>
@@ -733,7 +792,7 @@ Carlos Ferreira
                                       )}
                                     </TableCell>
                                     <TableCell className="text-sm text-muted-foreground">
-                                      {new Date(guest.created_at).toLocaleDateString("pt-BR")}
+                                      {formatDate(guest.created_at)}
                                     </TableCell>
                                   </TableRow>
                                 ))}

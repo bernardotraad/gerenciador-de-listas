@@ -1,160 +1,128 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { supabase } from "@/lib/supabase"
+import { toast } from "sonner"
 
 interface SiteSettings {
-  site_name: string
-  site_description?: string
-  contact_email?: string
-  contact_phone?: string
-  address?: string
-  logo_url?: string
-  primary_color?: string
-  secondary_color?: string
-  allow_public_submissions: boolean
-  require_approval: boolean
-  max_guests_per_submission: number
-  enable_notifications: boolean
-}
-
-interface SiteSettingsContextType {
-  settings: SiteSettings | null
   siteName: string
+  siteDescription: string
   loading: boolean
+  error: string | null
   setSiteName: (name: string) => Promise<void>
-  updateSettings: (newSettings: Partial<SiteSettings>) => Promise<void>
+  setSiteDescription: (description: string) => Promise<void>
+  refreshSettings: () => Promise<void>
 }
 
-const SiteSettingsContext = createContext<SiteSettingsContextType | undefined>(undefined)
-
-const defaultSettings: SiteSettings = {
-  site_name: "Sistema de Gestão",
-  site_description: "Sistema de gerenciamento de eventos e listas",
-  contact_email: "",
-  contact_phone: "",
-  address: "",
-  logo_url: "",
-  primary_color: "#000000",
-  secondary_color: "#666666",
-  allow_public_submissions: true,
-  require_approval: true,
-  max_guests_per_submission: 10,
-  enable_notifications: false,
-}
+const SiteSettingsContext = createContext<SiteSettings | undefined>(undefined)
 
 export function SiteSettingsProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<SiteSettings | null>(null)
+  const [siteName, setSiteNameState] = useState("Sistema de Gestão")
+  const [siteDescription, setSiteDescriptionState] = useState("Gestão de eventos e listas de convidados")
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchSettings = async () => {
     try {
+      setLoading(true)
+      setError(null)
+
       const { data, error } = await supabase.from("site_settings").select("setting_key, setting_value")
 
-      if (error) {
-        console.error("Erro ao buscar configurações:", error)
-        return
-      }
+      if (error) throw error
 
-      if (data && data.length > 0) {
-        // Converter array de configurações em objeto
-        const settingsObj = data.reduce((acc, setting) => {
-          acc[setting.setting_key] = setting.setting_value
-          return acc
-        }, {} as any)
+      if (data) {
+        const nameRecord = data.find((record) => record.setting_key === "site_name")
+        const descRecord = data.find((record) => record.setting_key === "site_description")
 
-        // Converter strings para tipos apropriados
-        const processedSettings: SiteSettings = {
-          site_name: settingsObj.site_name || "Sistema de Gestão",
-          site_description: settingsObj.site_description || "",
-          contact_email: settingsObj.contact_email || "",
-          contact_phone: settingsObj.contact_phone || "",
-          address: settingsObj.address || "",
-          logo_url: settingsObj.logo_url || "",
-          primary_color: settingsObj.primary_color || "#000000",
-          secondary_color: settingsObj.secondary_color || "#666666",
-          allow_public_submissions: settingsObj.allow_public_submissions === "true",
-          require_approval: settingsObj.require_approval === "true",
-          max_guests_per_submission: Number.parseInt(settingsObj.max_guests_per_submission) || 10,
-          enable_notifications: settingsObj.enable_notifications === "true",
+        if (nameRecord?.setting_value) {
+          setSiteNameState(nameRecord.setting_value)
         }
-
-        setSettings(processedSettings)
-      } else {
-        // Configurações padrão se não houver dados
-        setSettings(defaultSettings)
+        if (descRecord?.setting_value) {
+          setSiteDescriptionState(descRecord.setting_value)
+        }
       }
-    } catch (error) {
-      console.error("Erro ao carregar configurações:", error)
-      // Configurações padrão em caso de erro
-      setSettings(defaultSettings)
+    } catch (err) {
+      console.error("Erro ao carregar configurações:", err)
+      setError("Erro ao carregar configurações")
     } finally {
       setLoading(false)
     }
   }
 
-  const updateSettings = async (newSettings: Partial<SiteSettings>) => {
+  const setSiteName = async (name: string) => {
     try {
-      // Converter objeto em array de configurações
-      const settingsArray = Object.entries(newSettings).map(([key, value]) => ({
-        setting_key: key,
-        setting_value: typeof value === "boolean" ? value.toString() : value?.toString() || "",
-      }))
+      const { error } = await supabase.from("site_settings").upsert(
+        {
+          setting_key: "site_name",
+          setting_value: name,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "setting_key",
+        },
+      )
 
-      // Atualizar cada configuração
-      for (const setting of settingsArray) {
-        const { error } = await supabase.from("site_settings").upsert(
-          {
-            setting_key: setting.setting_key,
-            setting_value: setting.setting_value,
-          },
-          { onConflict: "setting_key" },
-        )
+      if (error) throw error
 
-        if (error) {
-          console.error(`Erro ao atualizar configuração ${setting.setting_key}:`, error)
-        }
-      }
-
-      // Recarregar configurações
-      await fetchSettings()
-    } catch (error) {
-      console.error("Erro ao atualizar configurações:", error)
-      throw error
+      setSiteNameState(name)
+      toast.success("Nome do site atualizado com sucesso!")
+    } catch (err) {
+      console.error("Erro ao atualizar nome do site:", err)
+      toast.error("Erro ao atualizar nome do site")
+      throw err
     }
+  }
+
+  const setSiteDescription = async (description: string) => {
+    try {
+      const { error } = await supabase.from("site_settings").upsert(
+        {
+          setting_key: "site_description",
+          setting_value: description,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "setting_key",
+        },
+      )
+
+      if (error) throw error
+
+      setSiteDescriptionState(description)
+      toast.success("Descrição do site atualizada com sucesso!")
+    } catch (err) {
+      console.error("Erro ao atualizar descrição do site:", err)
+      toast.error("Erro ao atualizar descrição do site")
+      throw err
+    }
+  }
+
+  const refreshSettings = async () => {
+    await fetchSettings()
   }
 
   useEffect(() => {
     fetchSettings()
   }, [])
 
-  const setSiteName = async (name: string) => {
-    await updateSettings({ site_name: name })
-    setSettings((prev) => (prev ? { ...prev, site_name: name } : { ...defaultSettings, site_name: name }))
-  }
-
-  const value = {
-    settings,
-    siteName: settings?.site_name ?? "Sistema de Gestão",
+  const value: SiteSettings = {
+    siteName,
+    siteDescription,
     loading,
+    error,
     setSiteName,
-    updateSettings,
+    setSiteDescription,
+    refreshSettings,
   }
 
   return <SiteSettingsContext.Provider value={value}>{children}</SiteSettingsContext.Provider>
 }
 
-export const useSiteSettings = () => {
+export function useSiteSettings() {
   const context = useContext(SiteSettingsContext)
-  if (!context) {
-    // Retornar contexto padrão em vez de lançar erro
-    return {
-      settings: defaultSettings,
-      siteName: defaultSettings.site_name,
-      loading: false,
-      setSiteName: async () => {},
-      updateSettings: async () => {},
-    }
+  if (context === undefined) {
+    throw new Error("useSiteSettings must be used within a SiteSettingsProvider")
   }
   return context
 }
