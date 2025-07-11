@@ -1,60 +1,98 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { APP_CONFIG } from "@/lib/constants"
+import { useState, useMemo, useCallback } from "react"
 
 interface UsePaginationProps<T> {
   data: T[]
   pageSize?: number
+  initialPage?: number
 }
 
-export function usePagination<T>({ data, pageSize = APP_CONFIG.PAGINATION.DEFAULT_PAGE_SIZE }: UsePaginationProps<T>) {
-  const [currentPage, setCurrentPage] = useState(1)
+interface UsePaginationReturn<T> {
+  currentPage: number
+  totalPages: number
+  pageSize: number
+  totalItems: number
+  startIndex: number
+  endIndex: number
+  paginatedData: T[]
+  goToPage: (page: number) => void
+  nextPage: () => void
+  previousPage: () => void
+  goToFirstPage: () => void
+  goToLastPage: () => void
+  resetPage: () => void
+  canGoNext: boolean
+  canGoPrevious: boolean
+}
+
+export function usePagination<T>({
+  data,
+  pageSize = 10,
+  initialPage = 1,
+}: UsePaginationProps<T>): UsePaginationReturn<T> {
+  const [currentPage, setCurrentPage] = useState(initialPage)
+
+  const totalItems = data.length
+  const totalPages = Math.ceil(totalItems / pageSize)
+
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = Math.min(startIndex + pageSize, totalItems)
 
   const paginatedData = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize
-    const endIndex = startIndex + pageSize
     return data.slice(startIndex, endIndex)
-  }, [data, currentPage, pageSize])
+  }, [data, startIndex, endIndex])
 
-  const totalPages = Math.ceil(data.length / pageSize)
-  const hasNextPage = currentPage < totalPages
-  const hasPreviousPage = currentPage > 1
+  const goToPage = useCallback(
+    (page: number) => {
+      const validPage = Math.max(1, Math.min(page, totalPages))
+      setCurrentPage(validPage)
+    },
+    [totalPages],
+  )
 
-  const goToPage = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page)
-    }
-  }
-
-  const nextPage = () => {
-    if (hasNextPage) {
+  const nextPage = useCallback(() => {
+    if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1)
     }
-  }
+  }, [currentPage, totalPages])
 
-  const previousPage = () => {
-    if (hasPreviousPage) {
+  const previousPage = useCallback(() => {
+    if (currentPage > 1) {
       setCurrentPage(currentPage - 1)
     }
-  }
+  }, [currentPage])
 
-  const resetPage = () => {
+  const goToFirstPage = useCallback(() => {
     setCurrentPage(1)
-  }
+  }, [])
+
+  const goToLastPage = useCallback(() => {
+    setCurrentPage(totalPages)
+  }, [totalPages])
+
+  const resetPage = useCallback(() => {
+    setCurrentPage(1)
+  }, [])
+
+  const canGoNext = currentPage < totalPages
+  const canGoPrevious = currentPage > 1
 
   return {
     currentPage,
     totalPages,
-    hasNextPage,
-    hasPreviousPage,
+    pageSize,
+    totalItems,
+    startIndex: startIndex + 1, // +1 para exibição (1-based)
+    endIndex,
     paginatedData,
     goToPage,
     nextPage,
     previousPage,
+    goToFirstPage,
+    goToLastPage,
     resetPage,
-    totalItems: data.length,
-    startIndex: (currentPage - 1) * pageSize + 1,
-    endIndex: Math.min(currentPage * pageSize, data.length),
+    canGoNext,
+    canGoPrevious,
   }
 }

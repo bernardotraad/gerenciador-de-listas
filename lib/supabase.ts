@@ -5,14 +5,6 @@ export const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, proc
 
 // Somente servidor ➜ cria quando PRECISAR da Service Role
 export function getSupabaseAdmin() {
-  /**
-   * Em ambientes de execução estritamente server-side (Vercel Functions),
-   * `window` não existe. Contudo, no Next.js (preview) os arquivos em `app/api`
-   * rodam no mesmo runtime do navegador e `window` está definido.
-   *
-   * Para permitir o preview sem erros, só bloqueamos em produção
-   * (process.env.NODE_ENV === "production").
-   */
   if (typeof window !== "undefined" && process.env.NODE_ENV === "production") {
     throw new Error("getSupabaseAdmin deve ser chamado apenas no servidor em produção")
   }
@@ -38,10 +30,12 @@ export interface Event {
   description?: string
   date: string
   time?: string
+  location?: string
   max_capacity: number
   status: "active" | "inactive" | "finished"
   created_by: string
   created_at: string
+  users?: User
 }
 
 export interface ListType {
@@ -57,7 +51,7 @@ export interface Sector {
   id: string
   name: string
   description?: string
-  capacity: number
+  capacity?: number
   color: string
   is_active: boolean
   created_at: string
@@ -78,6 +72,7 @@ export interface EventList {
   list_types?: ListType
   sectors?: Sector
   users?: User
+  guest_lists?: GuestList[]
   _count?: {
     guest_lists: number
     checked_in: number
@@ -112,4 +107,21 @@ export interface ActivityLog {
   created_at: string
   users?: User
   events?: Event
+}
+
+export interface PublicSubmission {
+  id: string
+  event_id?: string
+  event_list_id?: string
+  names: string[]
+  submitter_name: string
+  submitter_phone?: string
+  submitter_email?: string
+  submission_type: "public" | "specific_list"
+  status: "pending" | "approved" | "rejected"
+  created_at: string
+  processed_at?: string
+  processed_by?: string
+  events?: Event
+  event_lists?: EventList
 }

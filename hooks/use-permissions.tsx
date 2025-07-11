@@ -1,45 +1,77 @@
 "use client"
 
 import { useAuth } from "@/lib/auth"
-import { USER_ROLES } from "@/lib/constants"
+import { useMemo } from "react"
 
 export function usePermissions() {
   const { user } = useAuth()
 
-  const isAdmin = user?.role === USER_ROLES.ADMIN
-  const isUser = user?.role === USER_ROLES.USER
-  const isPortaria = user?.role === USER_ROLES.PORTARIA
+  const permissions = useMemo(() => {
+    if (!user) {
+      return {
+        canViewEvents: false,
+        canManageEvents: false,
+        canViewLists: false,
+        canManageLists: false,
+        canCheckIn: false,
+        canManageUsers: false,
+        canViewLogs: false,
+        canManageSettings: false,
+        canCreateEvents: false,
+        canDeleteEvents: false,
+        canEditEvents: false,
+        canViewReports: false,
+        canExportData: false,
+        canManageListTypes: false,
+        canManageSectors: false,
+      }
+    }
 
-  const canManageEvents = isAdmin
-  const canManageUsers = isAdmin
-  const canViewLogs = isAdmin
-  const canAccessSettings = isAdmin
-  const canSendNames = isAdmin || isUser || isPortaria
-  const canCheckIn = isAdmin || isPortaria
-  const canViewDashboard = isAdmin || isUser || isPortaria
-  const canViewEvents = isAdmin || isUser || isPortaria
-  const canViewGuestLists = isAdmin || isUser || isPortaria
+    const isAdmin = user.role === "admin"
+    const isPortaria = user.role === "portaria"
+    const isUser = user.role === "user"
 
-  const hasFullAccess = isAdmin
-  const hasLimitedAccess = isPortaria
-  const hasBasicAccess = isUser
+    return {
+      // Visualização de eventos
+      canViewEvents: isAdmin || isPortaria || isUser,
 
-  return {
-    user,
-    isAdmin,
-    isUser,
-    isPortaria,
-    canManageEvents,
-    canManageUsers,
-    canViewLogs,
-    canAccessSettings,
-    canSendNames,
-    canCheckIn,
-    canViewDashboard,
-    canViewEvents,
-    canViewGuestLists,
-    hasFullAccess,
-    hasLimitedAccess,
-    hasBasicAccess,
-  }
+      // Gerenciamento de eventos
+      canManageEvents: isAdmin,
+      canCreateEvents: isAdmin,
+      canDeleteEvents: isAdmin,
+      canEditEvents: isAdmin,
+
+      // Visualização de listas
+      canViewLists: isAdmin || isPortaria || isUser,
+
+      // Gerenciamento de listas
+      canManageLists: isAdmin || isPortaria,
+
+      // Check-in
+      canCheckIn: isAdmin || isPortaria,
+
+      // Gerenciamento de usuários
+      canManageUsers: isAdmin,
+
+      // Visualização de logs
+      canViewLogs: isAdmin,
+
+      // Configurações do sistema
+      canManageSettings: isAdmin,
+
+      // Relatórios
+      canViewReports: isAdmin || isPortaria,
+
+      // Exportação de dados
+      canExportData: isAdmin || isPortaria,
+
+      // Gerenciamento de tipos de lista
+      canManageListTypes: isAdmin,
+
+      // Gerenciamento de setores
+      canManageSectors: isAdmin,
+    }
+  }, [user])
+
+  return permissions
 }
