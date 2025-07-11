@@ -1,72 +1,25 @@
 # Guia de Deploy - Sistema de Gerenciamento de Eventos
 
-Este guia te ajudará a fazer o deploy do sistema no Netlify usando Supabase como banco de dados.
-
 ## 📋 Pré-requisitos
 
-- Conta no [GitHub](https://github.com)
-- Conta no [Netlify](https://netlify.com)
-- Conta no [Supabase](https://supabase.com)
+1. **Conta no GitHub** - Para hospedar o código
+2. **Conta no Supabase** - Para banco de dados e autenticação
+3. **Conta no Netlify** - Para deploy da aplicação
 
 ## 🚀 Passo a Passo
 
 ### 1. Configurar Supabase
 
-1. Acesse [supabase.com](https://supabase.com) e crie uma conta
+1. Acesse [supabase.com](https://supabase.com)
 2. Crie um novo projeto
-3. Vá em **Settings** → **API**
-4. Anote estas 3 variáveis:
-   - **Project URL** (NEXT_PUBLIC_SUPABASE_URL)
-   - **anon public** (NEXT_PUBLIC_SUPABASE_ANON_KEY)
-   - **service_role** (SUPABASE_SERVICE_ROLE_KEY)
+3. Anote as seguintes informações em **Settings > API**:
+   - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
+   - **anon public** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - **service_role** → `SUPABASE_SERVICE_ROLE_KEY`
 
-### 2. Gerar Chave Secreta
+### 2. Executar Scripts SQL
 
-Execute o comando no terminal:
-\`\`\`bash
-node scripts/generate-secret.js
-\`\`\`
-
-Anote o valor gerado para usar como `NEXTAUTH_SECRET`.
-
-### 3. Criar Repositório no GitHub
-
-\`\`\`bash
-# No terminal, na pasta do projeto:
-git init
-git add .
-git commit -m "Initial commit: Sistema de Gerenciamento de Eventos"
-
-# Crie um repositório no GitHub e depois:
-git remote add origin https://github.com/SEU_USUARIO/venue-management-system.git
-git push -u origin main
-\`\`\`
-
-### 4. Deploy no Netlify
-
-1. Acesse [netlify.com](https://netlify.com)
-2. Clique em **"New site from Git"**
-3. Conecte com GitHub
-4. Selecione seu repositório
-5. As configurações de build já estão no `netlify.toml`
-6. Clique em **"Deploy site"**
-
-### 5. Configurar Variáveis de Ambiente
-
-No painel do Netlify, vá em **Site settings** → **Environment variables** e adicione:
-
-\`\`\`env
-NEXT_PUBLIC_SUPABASE_URL=sua_url_do_supabase
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anon_do_supabase
-SUPABASE_SERVICE_ROLE_KEY=sua_chave_service_role_do_supabase
-NEXT_PUBLIC_SITE_NAME=Sistema de Eventos
-NEXTAUTH_SECRET=sua_chave_secreta_gerada
-NEXTAUTH_URL=https://seu-site.netlify.app
-\`\`\`
-
-### 6. Executar Scripts SQL
-
-No painel do Supabase, vá em **SQL Editor** e execute os scripts na ordem:
+No Supabase, vá em **SQL Editor** e execute os scripts na ordem:
 
 1. `scripts/01-create-tables.sql`
 2. `scripts/02-seed-data.sql`
@@ -77,44 +30,82 @@ No painel do Supabase, vá em **SQL Editor** e execute os scripts na ordem:
 7. `scripts/07-add-portaria-role.sql`
 8. `scripts/08-add-list-types.sql`
 
-### 7. Testar o Sistema
+### 3. Gerar Chave Secreta
 
-1. Acesse seu site no Netlify
-2. Faça login com as credenciais padrão:
-   - **Email**: admin@sistema.com
-   - **Senha**: admin123
-3. Teste as funcionalidades principais
+Execute o script para gerar o `NEXTAUTH_SECRET`:
+
+\`\`\`bash
+node scripts/generate-secret.js
+\`\`\`
+
+### 4. Configurar GitHub
+
+\`\`\`bash
+# Inicializar repositório
+git init
+git add .
+git commit -m "Initial commit: Sistema de Gerenciamento de Eventos"
+
+# Conectar com GitHub (substitua SEU_USUARIO)
+git remote add origin https://github.com/SEU_USUARIO/venue-management-system.git
+git push -u origin main
+\`\`\`
+
+### 5. Deploy no Netlify
+
+1. Acesse [netlify.com](https://netlify.com)
+2. Clique em **"New site from Git"**
+3. Conecte com GitHub
+4. Selecione seu repositório
+5. Configure:
+   - **Build command**: `npm install --legacy-peer-deps && npm run build`
+   - **Publish directory**: `.next`
+
+### 6. Configurar Variáveis de Ambiente
+
+No painel do Netlify, vá em **Site settings > Environment variables** e adicione:
+
+\`\`\`env
+NEXT_PUBLIC_SUPABASE_URL=sua_url_do_supabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anon_do_supabase
+SUPABASE_SERVICE_ROLE_KEY=sua_chave_service_role_do_supabase
+NEXTAUTH_SECRET=sua_chave_secreta_gerada
+NEXTAUTH_URL=https://seu-site.netlify.app
+NEXT_PUBLIC_SITE_NAME=Sistema de Eventos
+\`\`\`
+
+### 7. Finalizar Deploy
+
+1. Clique em **"Deploy site"**
+2. Aguarde o build completar
+3. Teste o site em produção
 
 ## 🔧 Solução de Problemas
 
 ### Build Falha
 - Verifique se todas as variáveis de ambiente estão configuradas
-- Confirme que os scripts SQL foram executados
-- Veja os logs de build no Netlify
+- Confirme que os scripts SQL foram executados no Supabase
+- Verifique os logs de build no Netlify
 
 ### Erro de Autenticação
-- Confirme as variáveis do Supabase
-- Verifique se o NEXTAUTH_URL está correto
-- Execute os scripts SQL na ordem correta
+- Confirme que `NEXTAUTH_URL` aponta para sua URL do Netlify
+- Verifique se `NEXTAUTH_SECRET` foi gerado corretamente
 
-### Banco de Dados
-- Execute os scripts SQL no Supabase
-- Verifique as permissões RLS (Row Level Security)
-- Confirme a estrutura das tabelas
+### Erro de Banco de Dados
+- Confirme que as variáveis do Supabase estão corretas
+- Verifique se os scripts SQL foram executados na ordem correta
 
 ## 📞 Suporte
 
-Se encontrar problemas:
-1. Verifique os logs no Netlify
-2. Confirme as variáveis de ambiente
-3. Execute os scripts SQL novamente
-4. Teste localmente primeiro
+Se encontrar problemas, verifique:
+1. Logs de build no Netlify
+2. Console do navegador para erros JavaScript
+3. Logs do Supabase para erros de banco de dados
 
 ## 🎯 Próximos Passos
 
 Após o deploy bem-sucedido:
-- [ ] Configurar domínio personalizado
-- [ ] Configurar SSL/HTTPS
-- [ ] Configurar backups do banco
-- [ ] Monitorar performance
-- [ ] Configurar notificações
+1. Crie o primeiro usuário admin
+2. Configure os tipos de lista
+3. Teste todas as funcionalidades
+4. Configure backup automático do banco de dados

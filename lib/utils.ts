@@ -103,31 +103,23 @@ export function truncateText(text: string, maxLength: number): string {
 }
 
 // Função para formatar data brasileira
-export function formatDateBR(date: string | Date): string {
-  if (!date) return "Data não definida"
-
-  try {
-    const dateObj = typeof date === "string" ? new Date(date) : date
-    if (isNaN(dateObj.getTime())) return "Data inválida"
-
-    return dateObj.toLocaleDateString("pt-BR")
-  } catch {
-    return "Data inválida"
-  }
+export function formatDate(date: string | Date): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(date))
 }
 
 // Função para formatar data e hora brasileira
-export function formatDateTimeBR(date: string | Date): string {
-  if (!date) return "Data não definida"
-
-  try {
-    const dateObj = typeof date === "string" ? new Date(date) : date
-    if (isNaN(dateObj.getTime())) return "Data inválida"
-
-    return dateObj.toLocaleString("pt-BR")
-  } catch {
-    return "Data inválida"
-  }
+export function formatDateTime(date: string | Date): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(date))
 }
 
 // Função para gerar ID único

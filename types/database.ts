@@ -1,5 +1,3 @@
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
-
 export interface Database {
   public: {
     Tables: {
@@ -70,7 +68,7 @@ export interface Database {
           event_id: string
           name: string
           type: string
-          guests: Json
+          guests: string[]
           created_by: string
           created_at: string
           updated_at: string
@@ -80,7 +78,7 @@ export interface Database {
           event_id: string
           name: string
           type: string
-          guests: Json
+          guests: string[]
           created_by: string
           created_at?: string
           updated_at?: string
@@ -90,7 +88,7 @@ export interface Database {
           event_id?: string
           name?: string
           type?: string
-          guests?: Json
+          guests?: string[]
           created_by?: string
           created_at?: string
           updated_at?: string
@@ -150,10 +148,8 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
+      user_role: "admin" | "user" | "portaria"
+      event_status: "draft" | "active" | "completed" | "cancelled"
     }
   }
 }

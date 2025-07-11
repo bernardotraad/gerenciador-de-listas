@@ -1,32 +1,20 @@
-import { createClient as createSupabaseClient } from "@supabase/supabase-js"
+import { createClient } from "@supabase/supabase-js"
 import type { User } from "@supabase/supabase-js"
-import type { Database } from "@/types/database"
 
-/**
- * Cria um cliente Supabase público usando as variáveis de ambiente.
- * Lança um erro descritivo se as variáveis não estiverem definidas,
- * evitando o “supabaseUrl is required”.
- */
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
-    "Missing Supabase environment variables. Please check:\n" +
-      "- NEXT_PUBLIC_SUPABASE_URL\n" +
-      "- NEXT_PUBLIC_SUPABASE_ANON_KEY\n\n" +
-      "Configure these in your Netlify environment variables.",
+    "Missing Supabase environment variables. Please check your .env file and ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.",
   )
 }
 
 // Create and export the Supabase client
-export const supabase = createSupabaseClient<Database>(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Re-export createClient for compatibility
-export const createClient = () => supabase
-
-// Export the createClient function from supabase-js for direct use
-export { createSupabaseClient } from "@supabase/supabase-js"
+export const createSupabaseClient = createClient
 
 /**
  * Cliente singleton para uso em componentes/client side.
@@ -50,14 +38,14 @@ export function getSupabaseAdmin() {
   if (!url || !serviceKey) {
     throw new Error("SUPABASE_SERVICE_ROLE_KEY (ou URL) não definido")
   }
-  return createSupabaseClient<Database>(url, serviceKey, {
+  return createClient(url, serviceKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   })
 }
 
 export type { User }
 
-/* ---- Tipos específicos do projeto permanecem inalterados ---- */
+/* ---- Tipos específicos do projeto ---- */
 
 export interface Event {
   id: string

@@ -44,30 +44,35 @@ export const ROLE_DESCRIPTIONS = {
   portaria: "Pode fazer check-in e gerenciar listas",
 } as const
 
+// Roles
+export const ROLES = {
+  ADMIN: "admin",
+  USER: "user",
+  PORTARIA: "portaria",
+} as const
+
 // Status dos eventos
 export const EVENT_STATUS = {
-  active: "Ativo",
-  inactive: "Inativo",
-  finished: "Finalizado",
+  ACTIVE: "active",
+  INACTIVE: "inactive",
+  FINISHED: "finished",
 } as const
 
 // Status das listas de convidados
 export const GUEST_STATUS = {
-  pending: "Pendente",
-  approved: "Aprovado",
-  rejected: "Rejeitado",
+  PENDING: "pending",
+  APPROVED: "approved",
+  REJECTED: "rejected",
 } as const
 
 // Cores padrão para tipos de lista
 export const DEFAULT_COLORS = [
-  "#3b82f6", // blue
   "#ef4444", // red
-  "#10b981", // green
-  "#f59e0b", // yellow
-  "#8b5cf6", // purple
-  "#06b6d4", // cyan
   "#f97316", // orange
-  "#84cc16", // lime
+  "#eab308", // yellow
+  "#22c55e", // green
+  "#3b82f6", // blue
+  "#8b5cf6", // violet
   "#ec4899", // pink
   "#6b7280", // gray
 ]
@@ -112,3 +117,9 @@ export const CACHE_CONFIG = {
   LONG_TTL: 60 * 60 * 1000, // 1 hora
   SHORT_TTL: 30 * 1000, // 30 segundos
 }
+
+// Tipos de submissão
+export const SUBMISSION_TYPES = {
+  PUBLIC: "public",
+  SPECIFIC_LIST: "specific_list",
+} as const
