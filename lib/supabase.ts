@@ -149,4 +149,13 @@ export interface PublicSubmission {
   event_lists?: EventList
 }
 
+// Interface para usuário customizado
+export interface CustomUser {
+  id: string
+  email: string
+  name: string
+  role: "admin" | "user" | "portaria"
+  created_at: string
+}
+
 export default supabase

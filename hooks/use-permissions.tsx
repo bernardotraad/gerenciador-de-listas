@@ -4,10 +4,10 @@ import { useAuth } from "@/lib/auth"
 import { useMemo } from "react"
 
 export function usePermissions() {
-  const { user } = useAuth()
+  const { customUser } = useAuth()
 
   const permissions = useMemo(() => {
-    if (!user) {
+    if (!customUser) {
       return {
         canViewEvents: false,
         canManageEvents: false,
@@ -24,12 +24,16 @@ export function usePermissions() {
         canExportData: false,
         canManageListTypes: false,
         canManageSectors: false,
+        canSubmitGuests: false,
+        isAdmin: false,
+        isPortaria: false,
+        isUser: false,
       }
     }
 
-    const isAdmin = user.role === "admin"
-    const isPortaria = user.role === "portaria"
-    const isUser = user.role === "user"
+    const isAdmin = customUser.role === "admin"
+    const isPortaria = customUser.role === "portaria"
+    const isUser = customUser.role === "user"
 
     return {
       // Visualização de eventos
@@ -70,8 +74,14 @@ export function usePermissions() {
 
       // Gerenciamento de setores
       canManageSectors: isAdmin,
+
+      // Novas permissões
+      canSubmitGuests: isAdmin || isPortaria || isUser,
+      isAdmin: isAdmin,
+      isPortaria: isPortaria,
+      isUser: isUser,
     }
-  }, [user])
+  }, [customUser])
 
   return permissions
 }

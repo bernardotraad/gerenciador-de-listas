@@ -40,8 +40,8 @@ export const ROLE_LABELS = {
 
 export const ROLE_DESCRIPTIONS = {
   admin: "Acesso completo ao sistema",
-  user: "Pode enviar listas de nomes",
-  portaria: "Pode fazer check-in e gerenciar listas",
+  user: "Pode enviar nomes para eventos",
+  portaria: "Pode fazer check-in e ver listas",
 } as const
 
 // Roles
@@ -51,13 +51,34 @@ export const ROLES = {
   PORTARIA: "portaria",
 } as const
 
+// Site configuration
+export const SITE_CONFIG = {
+  name: process.env.NEXT_PUBLIC_SITE_NAME || "Sistema de Gerenciamento de Eventos",
+  description: "Sistema completo para gerenciamento de eventos e listas de convidados",
+  version: "1.0.0",
+}
+
+// User roles
+export const USER_ROLES = {
+  ADMIN: "admin",
+  MANAGER: "manager",
+  PORTARIA: "portaria",
+  USER: "user",
+} as const
+
 // Status dos eventos
 export const EVENT_STATUS = {
   DRAFT: "draft",
   PUBLISHED: "published",
   ACTIVE: "active",
-  FINISHED: "finished",
+  COMPLETED: "completed",
   CANCELLED: "cancelled",
+} as const
+
+export const EVENT_STATUS_LABELS = {
+  active: "Ativo",
+  inactive: "Inativo",
+  finished: "Finalizado",
 } as const
 
 // Status das listas de convidados
@@ -68,6 +89,12 @@ export const GUEST_STATUS = {
   CONFIRMED: "confirmed",
   CHECKED_IN: "checked_in",
   NO_SHOW: "no_show",
+} as const
+
+export const GUEST_STATUS_LABELS = {
+  pending: "Pendente",
+  approved: "Aprovado",
+  rejected: "Rejeitado",
 } as const
 
 // Cores padrão para tipos de lista
@@ -142,5 +169,3 @@ export const PAGINATION = {
   DEFAULT_PAGE_SIZE: 10,
   MAX_PAGE_SIZE: 100,
 } as const
-
-export const DEFAULT_SITE_NAME = "Sistema de Gerenciamento de Eventos"
