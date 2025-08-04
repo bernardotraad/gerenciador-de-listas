@@ -61,6 +61,10 @@ cd gerenciador-de-listas
 npm install
 ```
 
+**Se encontrar problemas de instalação, use os scripts de instalação limpa:**
+- **Windows**: Execute `scripts/install-clean.bat`
+- **Linux/Mac**: Execute `scripts/install-clean.sh`
+
 ### 3. Configure o Supabase
 
 #### 3.1. Crie um projeto no Supabase
@@ -96,6 +100,46 @@ npm run dev
 
 Acesse [http://localhost:3000](http://localhost:3000)
 
+## 🚨 Solução de Problemas
+
+### Erro de Instalação de Dependências
+Se você encontrar erros como `404 Not Found` ou problemas com pacotes:
+
+**Windows:**
+```bash
+scripts/install-clean.bat
+```
+
+**Linux/Mac:**
+```bash
+chmod +x scripts/install-clean.sh
+./scripts/install-clean.sh
+```
+
+**Manual:**
+```bash
+# Limpar cache e arquivos
+rm -rf node_modules package-lock.json pnpm-lock.yaml
+npm cache clean --force
+
+# Reinstalar
+npm install
+```
+
+### Erro de Build
+- Verifique se todas as variáveis de ambiente estão configuradas
+- Confirme que os scripts SQL foram executados
+- Verifique se o Node.js está na versão 18+
+
+### Problema de Permissões
+- Execute o script `13-fix-admin-user.sql` se necessário
+- Verifique se seu email está correto no script
+
+### Erro de Autenticação
+- Confirme as variáveis do Supabase
+- Verifique se o NEXTAUTH_URL está correto
+- Teste com os usuários padrão primeiro
+
 ## 📊 Dados Iniciais
 
 O script de instalação cria automaticamente:
@@ -122,6 +166,10 @@ O script de instalação cria automaticamente:
 
 ### Manutenção
 - `01-create-tables.sql` até `13-fix-admin-user.sql` - Scripts individuais para migrações
+
+### Solução de Problemas
+- `install-clean.sh` - Instalação limpa (Linux/Mac)
+- `install-clean.bat` - Instalação limpa (Windows)
 
 📖 **Documentação completa**: Veja a pasta [scripts/](scripts/) para todos os scripts disponíveis
 
@@ -169,7 +217,7 @@ No painel do Vercel, vá em Settings > Environment variables:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=sua_url_do_supabase
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima
-SUPABASE_SERVICE_ROLE_KEY=sua_service_role_key
+SUPABASE_SERVICE_ROLE_KEY=sua_chave_service_role
 NEXTAUTH_SECRET=seu_secret_para_nextauth
 NEXTAUTH_URL=https://seu-site.vercel.app
 ```
