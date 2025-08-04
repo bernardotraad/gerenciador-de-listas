@@ -1,125 +1,74 @@
 "use client"
 
-import type React from "react"
-
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Breadcrumb } from "@/components/ui/breadcrumb"
+import { Badge } from "@/components/ui/badge"
 import { Loading } from "@/components/ui/loading"
-import { supabase, type Event, type EventList } from "@/lib/supabase"
-import { Send, RefreshCw, Users, Calendar, List, AlertCircle, CheckCircle, User } from "lucide-react"
-import { useEffect, useState } from "react"
+import { Separator } from "@/components/ui/separator"
+import { Users, Plus, RefreshCw, CheckCircle, AlertCircle, Info } from "lucide-react"
+import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useAuth } from "@/lib/auth"
 
-interface FormData {
-  event_id: string
-  submission_type: "public" | "specific_list"
-  list_id?: string
-  names: string
-  submitter_name: string
-  submitter_phone: string
-  submitter_email: string
+interface Event {
+  id: string
+  name: string
+  date: string
+  status: string
 }
 
-export default function EnviarNomesPage() {
-  const { user } = useAuth()
+interface ListType {
+  id: string
+  name: string
+  description: string
+}
+
+interface Sector {
+  id: string
+  name: string
+  description: string
+}
+
+const EnviarNomesPage = () => {
   const [events, setEvents] = useState<Event[]>([])
-  const [eventLists, setEventLists] = useState<EventList[]>([])
+  const [listTypes, setListTypes] = useState<ListType[]>([])
+  const [sectors, setSectors] = useState<Sector[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState({
     event_id: "",
-    submission_type: "public",
-    list_id: "",
-    names: "",
-    submitter_name: user?.name || "",
-    submitter_phone: "",
-    submitter_email: user?.email || "",
+    list_type_id: "",
+    sector_id: "",
+    guest_names: "",
+    contact_name: "",
+    contact_email: "",
+    contact_phone: "",
   })
 
-  useEffect(() => {
-    fetchInitialData()
-  }, [])
-
-  // Preencher dados do usuário logado
-  useEffect(() => {
-    if (user) {
-      setFormData((prev) => ({
-        ...prev,
-        submitter_name: user.name,
-        submitter_email: user.email,
-      }))
-    }
-  }, [user])
-
-  useEffect(() => {
-    if (formData.event_id && formData.submission_type === "specific_list") {
-      fetchEventLists()
-    } else {
-      setEventLists([])
-    }
-  }, [formData.event_id, formData.submission_type])
-
-  const fetchInitialData = async () => {
+  const handleLoadData = async () => {
     try {
-      const { data: eventsData, error: eventsError } = await supabase
-        .from("events")
-        .select("*")
-        .eq("status", "active")
-        .order("date", { ascending: true })
+      const [eventsResult, listTypesResult, sectorsResult] = await Promise.all([
+        supabase.from("events").select("*").eq("status", "active").order("date", { ascending: true }),
+        supabase.from("list_types").select("*").order("name", { ascending: true }),
+        supabase.from("sectors").select("*").order("name", { ascending: true }),
+      ])
 
-      if (eventsError) throw eventsError
+      if (eventsResult.error) throw eventsResult.error
+      if (listTypesResult.error) throw listTypesResult.error
+      if (sectorsResult.error) throw sectorsResult.error
 
-      setEvents(eventsData || [])
+      setEvents(eventsResult.data || [])
+      setListTypes(listTypesResult.data || [])
+      setSectors(sectorsResult.data || [])
     } catch (error) {
-      console.error("❌ Erro ao carregar dados iniciais:", error)
-      toast.error("Erro ao carregar dados iniciais")
+      console.error("Erro ao carregar dados:", error)
+      toast.error("Erro ao carregar dados")
     } finally {
       setLoading(false)
-    }
-  }
-
-  const fetchEventLists = async () => {
-    if (!formData.event_id) return
-
-    try {
-      const { data: listsWithRelations, error: listsError } = await supabase
-        .from("event_lists")
-        .select(`
-          *,
-          list_types (id, name, color, is_active),
-          sectors (id, name, color, is_active)
-        `)
-        .eq("event_id", formData.event_id)
-
-      if (listsError) throw listsError
-
-      const validLists =
-        listsWithRelations?.filter((list) => {
-          const isListActive = list.is_active === true
-          const hasValidType = list.list_types && list.list_types.is_active === true
-          const hasValidSector = list.sectors && list.sectors.is_active === true
-          return isListActive && hasValidType && hasValidSector
-        }) || []
-
-      setEventLists(validLists)
-
-      if (validLists.length > 0) {
-        toast.success(
-          `${validLists.length} lista${validLists.length > 1 ? "s" : ""} encontrada${validLists.length > 1 ? "s" : ""}`,
-        )
-      }
-    } catch (error) {
-      console.error("❌ Erro ao carregar listas:", error)
-      toast.error("Erro ao carregar listas do evento")
-      setEventLists([])
     }
   }
 
@@ -128,373 +77,280 @@ export default function EnviarNomesPage() {
     setSubmitting(true)
 
     try {
-      // Validações
-      if (!formData.event_id) {
-        toast.error("Selecione um evento")
-        return
-      }
-
-      if (formData.submission_type === "specific_list" && !formData.list_id) {
-        toast.error("Selecione uma lista específica")
-        return
-      }
-
-      if (!formData.names.trim()) {
-        toast.error("Digite pelo menos um nome")
-        return
-      }
-
-      if (!formData.submitter_name.trim()) {
-        toast.error("Digite seu nome")
-        return
-      }
-
-      // Processar nomes
-      const namesList = formData.names
+      const namesArray = formData.guest_names
         .split("\n")
         .map((name) => name.trim())
         .filter((name) => name.length > 0)
 
-      if (namesList.length === 0) {
-        toast.error("Digite pelo menos um nome válido")
+      if (namesArray.length === 0) {
+        toast.error("Por favor, insira pelo menos um nome")
         return
       }
 
-      // Preparar dados para submissão
-      const submissionData = {
-        event_id: formData.event_id,
-        event_list_id: formData.submission_type === "specific_list" ? formData.list_id : null,
-        names: namesList,
-        submitter_name: formData.submitter_name,
-        submitter_phone: formData.submitter_phone || null,
-        submitter_email: formData.submitter_email || null,
-        submission_type: formData.submission_type,
+      if (namesArray.length > 50) {
+        toast.error("Máximo de 50 nomes por envio")
+        return
       }
 
-      const { error } = await supabase.from("public_submissions").insert([submissionData])
+      const guestData = namesArray.map((name) => ({
+        name,
+        event_id: formData.event_id,
+        list_type_id: formData.list_type_id,
+        sector_id: formData.sector_id,
+        contact_name: formData.contact_name,
+        contact_email: formData.contact_email,
+        contact_phone: formData.contact_phone,
+        submitted_at: new Date().toISOString(),
+      }))
+
+      const { error } = await supabase.from("guest_lists").insert(guestData)
 
       if (error) throw error
 
-      toast.success(
-        `${namesList.length} nome${namesList.length > 1 ? "s" : ""} enviado${namesList.length > 1 ? "s" : ""} com sucesso!`,
-      )
-
-      // Limpar formulário
+      toast.success(`${namesArray.length} nome(s) enviado(s) com sucesso!`)
       setFormData({
         event_id: "",
-        submission_type: "public",
-        list_id: "",
-        names: "",
-        submitter_name: user?.name || "",
-        submitter_phone: "",
-        submitter_email: user?.email || "",
+        list_type_id: "",
+        sector_id: "",
+        guest_names: "",
+        contact_name: "",
+        contact_email: "",
+        contact_phone: "",
       })
-      setEventLists([])
-    } catch (error) {
-      console.error("❌ Erro ao enviar nomes:", error)
-      toast.error("Erro ao enviar nomes. Tente novamente.")
+    } catch (error: any) {
+      console.error("Erro ao enviar nomes:", error)
+      toast.error(error.message || "Erro ao enviar nomes")
     } finally {
       setSubmitting(false)
     }
   }
 
   const handleRefresh = () => {
-    if (formData.event_id && formData.submission_type === "specific_list") {
-      fetchEventLists()
-    }
+    handleLoadData()
   }
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData({ ...formData, [field]: value })
+  }
+
+  const handleGetNameCount = () => {
+    return formData.guest_names
+      .split("\n")
+      .map((name) => name.trim())
+      .filter((name) => name.length > 0).length
+  }
+
+  useEffect(() => {
+    handleLoadData()
+  }, [])
 
   if (loading) {
     return <Loading text="Carregando formulário..." />
   }
 
-  return (
-    <div className="container mx-auto px-4 py-6 md:py-8">
-      <Breadcrumb />
+  const nameCount = handleGetNameCount()
 
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-6 md:mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">Enviar Lista de Nomes</h1>
-          <p className="text-muted-foreground">Envie sua lista de nomes para os eventos da casa de show</p>
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Enviar Lista de Nomes</h1>
+          <p className="text-muted-foreground">
+            Envie a lista de convidados para um evento específico
+          </p>
         </div>
 
-        {events.length === 0 ? (
-          <Card>
-            <CardContent className="text-center py-12">
-              <AlertCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Nenhum evento disponível</h3>
-              <p className="text-muted-foreground">
-                Não há eventos ativos no momento para envio de listas. Tente novamente mais tarde.
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Send className="w-5 h-5 mr-2" />
-                Formulário de Envio
-                {user && (
-                  <span className="ml-auto flex items-center text-sm text-muted-foreground">
-                    <User className="w-4 h-4 mr-1" />
-                    {user.name}
-                  </span>
-                )}
-              </CardTitle>
-              <CardDescription>
-                {user
-                  ? "Seus dados foram preenchidos automaticamente. Escolha o destino e adicione a lista de nomes."
-                  : "Preencha seus dados, escolha o destino e adicione a lista de nomes que deseja enviar"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Seleção do Evento */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Formulário de Envio
+            </CardTitle>
+            <CardDescription>
+              Preencha as informações abaixo para enviar sua lista de convidados
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Seleção de Evento */}
+              <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="event">Evento *</Label>
+                  <Label htmlFor="event_id">Evento *</Label>
                   <Select
                     value={formData.event_id}
-                    onValueChange={(value) => setFormData((prev) => ({ ...prev, event_id: value, list_id: "" }))}
+                    onValueChange={(value) => handleInputChange("event_id", value)}
+                    required
                   >
-                    <SelectTrigger className="h-12">
+                    <SelectTrigger>
                       <SelectValue placeholder="Selecione um evento" />
                     </SelectTrigger>
                     <SelectContent>
                       {events.map((event) => (
                         <SelectItem key={event.id} value={event.id}>
-                          <div className="flex items-center space-x-2">
-                            <Calendar className="w-4 h-4" />
-                            <span>{event.name}</span>
-                            <span className="text-muted-foreground text-sm">
-                              ({new Date(event.date).toLocaleDateString("pt-BR")})
-                            </span>
-                          </div>
+                          {event.name} - {new Date(event.date).toLocaleDateString("pt-BR")}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Tipo de Submissão */}
                 <div className="space-y-2">
-                  <Label htmlFor="submission_type">Tipo de Envio *</Label>
+                  <Label htmlFor="list_type_id">Tipo de Lista *</Label>
                   <Select
-                    value={formData.submission_type}
-                    onValueChange={(value: "public" | "specific_list") =>
-                      setFormData((prev) => ({ ...prev, submission_type: value, list_id: "" }))
-                    }
+                    value={formData.list_type_id}
+                    onValueChange={(value) => handleInputChange("list_type_id", value)}
+                    required
                   >
-                    <SelectTrigger className="h-12">
-                      <SelectValue />
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo de lista" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="public">
-                        <div className="flex items-center space-x-2">
-                          <Users className="w-4 h-4" />
-                          <div>
-                            <div>Lista Geral</div>
-                            <div className="text-xs text-muted-foreground">Envio para análise da equipe</div>
-                          </div>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="specific_list">
-                        <div className="flex items-center space-x-2">
-                          <List className="w-4 h-4" />
-                          <div>
-                            <div>Lista Específica</div>
-                            <div className="text-xs text-muted-foreground">Envio direto para uma lista</div>
-                          </div>
-                        </div>
-                      </SelectItem>
+                      {listTypes.map((type) => (
+                        <SelectItem key={type.id} value={type.id}>
+                          {type.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
 
-                {/* Seleção da Lista Específica */}
-                {formData.submission_type === "specific_list" && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="list">Lista Específica *</Label>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleRefresh}
-                        disabled={!formData.event_id}
-                      >
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        Atualizar
-                      </Button>
-                    </div>
+              {/* Seleção de Setor */}
+              <div className="space-y-2">
+                <Label htmlFor="sector_id">Setor *</Label>
+                <Select
+                  value={formData.sector_id}
+                  onValueChange={(value) => handleInputChange("sector_id", value)}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o setor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sectors.map((sector) => (
+                      <SelectItem key={sector.id} value={sector.id}>
+                        {sector.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                    {!formData.event_id ? (
-                      <Alert>
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>Selecione um evento primeiro para ver as listas disponíveis</AlertDescription>
-                      </Alert>
-                    ) : eventLists.length === 0 ? (
-                      <Alert>
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>
-                          Nenhuma lista disponível para este evento. Tente o envio geral.
-                        </AlertDescription>
-                      </Alert>
-                    ) : (
-                      <Select
-                        value={formData.list_id}
-                        onValueChange={(value) => setFormData((prev) => ({ ...prev, list_id: value }))}
-                      >
-                        <SelectTrigger className="h-12">
-                          <SelectValue placeholder={`Selecione uma das ${eventLists.length} listas`} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {eventLists.map((list) => (
-                            <SelectItem key={list.id} value={list.id}>
-                              <div className="flex items-center space-x-2">
-                                <div
-                                  className="w-3 h-3 rounded-full"
-                                  style={{ backgroundColor: list.list_types?.color }}
-                                />
-                                <span>{list.name}</span>
-                                <span className="text-muted-foreground text-sm">
-                                  ({list.list_types?.name} - {list.sectors?.name})
-                                </span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </div>
-                )}
+              <Separator />
 
-                {/* Lista de Nomes */}
-                <div className="space-y-2">
-                  <Label htmlFor="names" className="flex items-center justify-between">
-                    <span>Lista de Nomes *</span>
-                    {formData.names && (
-                      <span className="text-sm text-muted-foreground">
-                        {formData.names.split("\n").filter((name) => name.trim()).length} nomes
-                      </span>
-                    )}
-                  </Label>
-                  <Textarea
-                    id="names"
-                    placeholder="Digite um nome por linha&#10;Exemplo:&#10;João Silva&#10;Maria Santos&#10;Pedro Oliveira"
-                    value={formData.names}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, names: e.target.value }))}
-                    className="min-h-[150px] text-base"
-                    required
-                  />
-                  <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded p-3">
-                    <p className="text-sm text-blue-800 dark:text-blue-200">
-                      💡 <strong>Dica:</strong> Digite um nome por linha. Os nomes serão formatados automaticamente.
-                    </p>
+              {/* Lista de Nomes */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="guest_names">Lista de Nomes *</Label>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">{nameCount} nome(s)</Badge>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRefresh}
+                      aria-label="Recarregar dados"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
+                <Textarea
+                  id="guest_names"
+                  placeholder="Digite um nome por linha:&#10;João Silva&#10;Maria Santos&#10;Pedro Oliveira"
+                  value={formData.guest_names}
+                  onChange={(e) => handleInputChange("guest_names", e.target.value)}
+                  className="min-h-[200px]"
+                  required
+                />
+                <p className="text-sm text-muted-foreground">
+                  Digite um nome por linha. Máximo de 50 nomes por envio.
+                </p>
+              </div>
 
-                {/* Informações do Solicitante */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Suas Informações</h3>
+              <Separator />
 
+              {/* Informações de Contato */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Informações de Contato</h3>
+                <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2">
-                    <Label htmlFor="submitter_name">Seu Nome *</Label>
+                    <Label htmlFor="contact_name">Nome do Contato</Label>
                     <Input
-                      id="submitter_name"
-                      placeholder="Digite seu nome completo"
-                      value={formData.submitter_name}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, submitter_name: e.target.value }))}
-                      className={`h-12 text-base ${user ? "bg-muted/50" : ""}`}
-                      readOnly={!!user}
-                      required
+                      id="contact_name"
+                      value={formData.contact_name}
+                      onChange={(e) => handleInputChange("contact_name", e.target.value)}
+                      placeholder="Seu nome"
                     />
-                    {user && (
-                      <p className="text-xs text-muted-foreground">Campo preenchido com seus dados de usuário</p>
-                    )}
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="submitter_phone">Telefone</Label>
-                      <Input
-                        id="submitter_phone"
-                        placeholder="(11) 99999-9999"
-                        value={formData.submitter_phone}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, submitter_phone: e.target.value }))}
-                        className="h-12 text-base"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="submitter_email">E-mail</Label>
-                      <Input
-                        id="submitter_email"
-                        type="email"
-                        placeholder="seu@email.com"
-                        value={formData.submitter_email}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, submitter_email: e.target.value }))}
-                        className={`h-12 text-base ${user ? "bg-muted/50" : ""}`}
-                        readOnly={!!user}
-                      />
-                      {user && (
-                        <p className="text-xs text-muted-foreground">Campo preenchido com seus dados de usuário</p>
-                      )}
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="contact_email">Email</Label>
+                    <Input
+                      id="contact_email"
+                      type="email"
+                      value={formData.contact_email}
+                      onChange={(e) => handleInputChange("contact_email", e.target.value)}
+                      placeholder="seu@email.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="contact_phone">Telefone</Label>
+                    <Input
+                      id="contact_phone"
+                      value={formData.contact_phone}
+                      onChange={(e) => handleInputChange("contact_phone", e.target.value)}
+                      placeholder="(11) 99999-9999"
+                    />
                   </div>
                 </div>
+              </div>
 
-                {/* Botão de Envio */}
-                <Button type="submit" className="w-full h-12 text-base" disabled={submitting}>
+              {/* Informações Importantes */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-2">
+                  <Info className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-blue-900">Informações Importantes</h4>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li>• Os nomes serão adicionados à lista do evento selecionado</li>
+                      <li>• Verifique se o tipo de lista e setor estão corretos</li>
+                      <li>• Máximo de 50 nomes por envio</li>
+                      <li>• Os nomes serão verificados antes da aprovação</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Botão de Envio */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  {nameCount > 0 && (
+                    <>
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span>{nameCount} nome(s) pronto(s) para envio</span>
+                    </>
+                  )}
+                </div>
+                <Button type="submit" disabled={submitting || nameCount === 0}>
                   {submitting ? (
                     <>
-                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
                       Enviando...
                     </>
                   ) : (
                     <>
-                      <Send className="w-4 h-4 mr-2" />
-                      Enviar Lista de Nomes
+                      <Plus className="h-4 w-4 mr-2" />
+                      Enviar Lista
                     </>
                   )}
                 </Button>
-              </form>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Informações Adicionais */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center">
-              <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
-              Como Funciona
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="flex items-start space-x-2">
-              <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0" />
-              <p>
-                <strong>Lista Geral:</strong> Seus nomes serão analisados pela equipe e distribuídos nas listas
-                apropriadas conforme disponibilidade.
-              </p>
-            </div>
-            <div className="flex items-start space-x-2">
-              <div className="w-2 h-2 bg-green-600 rounded-full mt-2 flex-shrink-0" />
-              <p>
-                <strong>Lista Específica:</strong> Seus nomes serão enviados diretamente para a lista escolhida, sujeito
-                à capacidade disponível.
-              </p>
-            </div>
-            <div className="flex items-start space-x-2">
-              <div className="w-2 h-2 bg-orange-600 rounded-full mt-2 flex-shrink-0" />
-              <p>
-                <strong>Confirmação:</strong> Você receberá uma confirmação após o envio. A aprovação final depende da
-                análise da equipe do evento.
-              </p>
-            </div>
+              </div>
+            </form>
           </CardContent>
         </Card>
       </div>
     </div>
   )
 }
+
+export default EnviarNomesPage

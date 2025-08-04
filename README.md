@@ -40,37 +40,96 @@ Sistema completo para gerenciamento de listas de convidados para casas de show, 
 - **Styling**: Tailwind CSS, shadcn/ui, Lucide Icons
 - **Backend**: Supabase (PostgreSQL)
 - **Autenticação**: Supabase Auth com RLS
-- **Deploy**: Netlify com CI/CD
-- **Monitoramento**: GitHub Actions
+- **Deploy**: Vercel com CI/CD
+- **Monitoramento**: Vercel Analytics
 
-## 🚀 Como Executar Localmente
+## 🚀 Instalação Rápida
 
 ### Pré-requisitos
 - Node.js 18+ 
 - npm ou yarn
-- Conta no Supabase
+- Conta no [Supabase](https://supabase.com)
 
 ### 1. Clone o repositório
-\`\`\`bash
-git clone https://github.com/seu-usuario/venue-management-system.git
-cd venue-management-system
-\`\`\`
+```bash
+git clone https://github.com/seu-usuario/gerenciador-de-listas.git
+cd gerenciador-de-listas
+```
 
 ### 2. Instale as dependências
-\`\`\`bash
+```bash
 npm install
-\`\`\`
+```
 
-### 3. Configure as variáveis de ambiente
+### 3. Configure o Supabase
+
+#### 3.1. Crie um projeto no Supabase
+1. Acesse [supabase.com](https://supabase.com)
+2. Crie um novo projeto
+3. Anote a URL e as chaves de API
+
+#### 3.2. Configure a Database
+1. No seu projeto Supabase, vá para **SQL Editor**
+2. Execute o script `scripts/00-setup-database-complete.sql`
+3. Verifique se todas as tabelas foram criadas no **Table Editor**
+
+📖 **Guia detalhado**: Veja [README-INSTALACAO.md](scripts/README-INSTALACAO.md)
+
+### 4. Configure as variáveis de ambiente
 Crie um arquivo `.env.local` na raiz do projeto:
 
-\`\`\`env
+```env
+# Supabase
 NEXT_PUBLIC_SUPABASE_URL=sua_url_do_supabase
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima
 SUPABASE_SERVICE_ROLE_KEY=sua_service_role_key
-\`\`\`
 
-### 4. Configure o banco de dados
+# Auth (opcional)
+NEXTAUTH_SECRET=seu_secret_para_nextauth
+NEXTAUTH_URL=http://localhost:3000
+```
+
+### 5. Execute o projeto
+```bash
+npm run dev
+```
+
+Acesse [http://localhost:3000](http://localhost:3000)
+
+## 📊 Dados Iniciais
+
+O script de instalação cria automaticamente:
+
+### 👤 Usuários Padrão
+- **admin@casadeshow.com** (admin) - Acesso total
+- **user@casadeshow.com** (user) - Usuário comum  
+- **portaria@casadeshow.com** (portaria) - Check-in
+
+### 🎫 Tipos de Lista
+- VIP, Desconto, Aniversariante, Imprensa, Artista, Produção, Cortesia, Camarote
+
+### 🏢 Setores
+- Pista, Camarotes A/B, VIP Lounge, Backstage, Bar Premium, Mezanino, Área Externa
+
+### 🎪 Evento de Exemplo
+- "Show de Rock - Banda XYZ" com 3 listas de exemplo
+
+## 🔧 Scripts Disponíveis
+
+### Instalação
+- `00-setup-database-complete.sql` - **Script principal** para instalação completa
+- `00-reset-database.sql` - Reset completo da database
+
+### Manutenção
+- `01-create-tables.sql` até `13-fix-admin-user.sql` - Scripts individuais para migrações
+
+📖 **Documentação completa**: Veja a pasta [scripts/](scripts/) para todos os scripts disponíveis
+
+## 🚀 Como Executar Localmente (Método Alternativo)
+
+Se preferir usar os scripts individuais:
+
+### Configure o banco de dados
 Execute os scripts SQL na pasta `scripts/` no seu Supabase na ordem:
 
 1. **Estrutura básica:**
@@ -97,49 +156,35 @@ Execute os scripts SQL na pasta `scripts/` no seu Supabase na ordem:
    - `99-reset-database.sql` - Reset mantendo admins
    - `99-reset-database-custom.sql` - Reset personalizado
 
-### 5. Execute o projeto
-\`\`\`bash
-npm run dev
-\`\`\`
-
-Acesse `http://localhost:3000`
-
-### 6. Primeiro acesso
-- **Login padrão**: `admin@admin.com` / `admin123`
-- Configure o nome do site em Configurações
-- Crie seu primeiro evento
-- Adicione tipos de lista e setores conforme necessário
-
-## 📦 Deploy no Netlify
+## 🚀 Deploy no Vercel
 
 ### 1. Conecte seu repositório
-- Faça login no [Netlify](https://netlify.com)
-- Clique em "New site from Git"
+- Faça login no [Vercel](https://vercel.com)
+- Clique em "New Project"
 - Conecte seu repositório GitHub
 
 ### 2. Configure as variáveis de ambiente
-No painel do Netlify, vá em Site settings > Environment variables:
+No painel do Vercel, vá em Settings > Environment variables:
 
-\`\`\`
+```env
 NEXT_PUBLIC_SUPABASE_URL=sua_url_do_supabase
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima
 SUPABASE_SERVICE_ROLE_KEY=sua_service_role_key
-\`\`\`
+NEXTAUTH_SECRET=seu_secret_para_nextauth
+NEXTAUTH_URL=https://seu-site.vercel.app
+```
 
-### 3. Configure o build
-- Build command: `npm run build`
-- Publish directory: `.next`
-- Node version: `18`
+### 3. Deploy automático
+O site será deployado automaticamente a cada push na branch `main`.
 
-### 4. Deploy automático
-O site será deployado automaticamente a cada push na branch `main` via GitHub Actions.
+📖 **Guia completo de deploy**: Veja [DEPLOY.md](DEPLOY.md)
 
 ## 🔐 Configuração de Segurança
 
 ### Supabase RLS (Row Level Security)
 O sistema usa políticas de segurança robustas:
 
-\`\`\`sql
+```sql
 -- Habilitar RLS em todas as tabelas
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE events ENABLE ROW LEVEL SECURITY;
@@ -151,7 +196,7 @@ ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can read own data" ON users FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Public can read active events" ON events FOR SELECT USING (status = 'active');
 CREATE POLICY "Authenticated users can insert guest lists" ON guest_lists FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-\`\`\`
+```
 
 ## 👥 Tipos de Usuário
 
@@ -218,48 +263,28 @@ CREATE POLICY "Authenticated users can insert guest lists" ON guest_lists FOR IN
 ## 🔧 Scripts de Manutenção
 
 ### Reset do Banco de Dados
-\`\`\`sql
+```sql
 -- Manter apenas usuários admin
 \i scripts/99-reset-database.sql
 
 -- Personalizar usuários a manter
 \i scripts/99-reset-database-custom.sql
-\`\`\`
+```
 
 ### Verificação de Integridade
-\`\`\`sql
+```sql
 -- Debug e análise
 \i scripts/11-debug-event-lists.sql
 
 -- Verificar migração
 \i scripts/10-verify-migration.sql
-\`\`\`
+```
 
 ## 📱 Interface Mobile
 
-- **Design mobile-first** otimizado para portaria
-- **Menu simplificado** com navegação intuitiva
-- **Botões grandes** para facilitar uso em movimento
-- **Cards responsivos** que se adaptam a qualquer tela
-- **Busca otimizada** com resultados instantâneos
+O sistema é totalmente responsivo e otimizado para dispositivos móveis, com interface touch-friendly para uso na portaria.
 
-## 🎯 Roadmap
-
-### 🚧 **Em Desenvolvimento**
-- [ ] Notificações push em tempo real
-- [ ] Relatórios avançados com gráficos
-- [ ] App mobile nativo
-- [ ] Integração com sistemas de pagamento
-- [ ] API pública para integrações
-
-### 💡 **Planejado**
-- [ ] Sistema de convites por QR Code
-- [ ] Integração com redes sociais
-- [ ] Análise de dados com IA
-- [ ] Multi-idioma
-- [ ] Tema escuro avançado
-
-## 🤝 Contribuindo
+## 🤝 Contribuição
 
 1. Fork o projeto
 2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
@@ -267,35 +292,16 @@ CREATE POLICY "Authenticated users can insert guest lists" ON guest_lists FOR IN
 4. Push para a branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
-### 📋 **Guidelines**
-- Use TypeScript para type safety
-- Siga os padrões do ESLint e Prettier
-- Adicione testes para novas funcionalidades
-- Documente mudanças no README
-- Use commits semânticos
-
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para detalhes.
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 ## 📞 Suporte
 
-Para suporte técnico:
-- 📧 Email: suporte@casadeshow.com
-- 🐛 Issues: [GitHub Issues](https://github.com/seu-usuario/venue-management-system/issues)
-- 📖 Documentação: [Wiki do Projeto](https://github.com/seu-usuario/venue-management-system/wiki)
-
-## 🏆 Créditos
-
-Desenvolvido com ❤️ para facilitar o gerenciamento de eventos e melhorar a experiência de todos os envolvidos.
-
-### 🛠️ **Stack Tecnológico**
-- **Frontend**: Next.js, React, TypeScript, Tailwind CSS
-- **Backend**: Supabase, PostgreSQL
-- **Deploy**: Netlify, GitHub Actions
-- **UI**: shadcn/ui, Lucide Icons
-- **Monitoramento**: Supabase Analytics
+- 📧 Email: seu-email@exemplo.com
+- 🐛 Issues: [GitHub Issues](https://github.com/seu-usuario/gerenciador-de-listas/issues)
+- 📖 Documentação: [Wiki](https://github.com/seu-usuario/gerenciador-de-listas/wiki)
 
 ---
 
-**Sistema de Gerenciamento de Listas v2.0** - Transformando a gestão de eventos! 🎉
+**🎉 Desenvolvido com ❤️ para casas de show**

@@ -1,98 +1,92 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo } from "react"
 
-interface UsePaginationProps<T> {
-  data: T[]
+interface UsePaginationReturn<T> {
+  currentItems: T[]
+  currentPage: number
+  totalPages: number
+  totalItems: number
+  pageSize: number
+  goToPage: (page: number) => void
+  nextPage: () => void
+  previousPage: () => void
+  setPageSize: (size: number) => void
+  hasNextPage: boolean
+  hasPreviousPage: boolean
+}
+
+interface UsePaginationOptions {
   pageSize?: number
   initialPage?: number
 }
 
-interface UsePaginationReturn<T> {
-  currentPage: number
-  totalPages: number
-  pageSize: number
-  totalItems: number
-  startIndex: number
-  endIndex: number
-  paginatedData: T[]
-  goToPage: (page: number) => void
-  nextPage: () => void
-  previousPage: () => void
-  goToFirstPage: () => void
-  goToLastPage: () => void
-  resetPage: () => void
-  canGoNext: boolean
-  canGoPrevious: boolean
-}
+const DEFAULT_PAGE_SIZE = 10
+const DEFAULT_INITIAL_PAGE = 1
 
-export function usePagination<T>({
-  data,
-  pageSize = 10,
-  initialPage = 1,
-}: UsePaginationProps<T>): UsePaginationReturn<T> {
+const usePagination = <T>(
+  items: T[],
+  options: UsePaginationOptions = {}
+): UsePaginationReturn<T> => {
+  const { 
+    pageSize: initialPageSize = DEFAULT_PAGE_SIZE, 
+    initialPage = DEFAULT_INITIAL_PAGE 
+  } = options
+
   const [currentPage, setCurrentPage] = useState(initialPage)
+  const [pageSize, setPageSize] = useState(initialPageSize)
 
-  const totalItems = data.length
+  const totalItems = items.length
   const totalPages = Math.ceil(totalItems / pageSize)
-
   const startIndex = (currentPage - 1) * pageSize
-  const endIndex = Math.min(startIndex + pageSize, totalItems)
+  const endIndex = startIndex + pageSize
 
-  const paginatedData = useMemo(() => {
-    return data.slice(startIndex, endIndex)
-  }, [data, startIndex, endIndex])
+  const currentItems = useMemo(() => {
+    return items.slice(startIndex, endIndex)
+  }, [items, startIndex, endIndex])
 
-  const goToPage = useCallback(
-    (page: number) => {
-      const validPage = Math.max(1, Math.min(page, totalPages))
-      setCurrentPage(validPage)
-    },
-    [totalPages],
-  )
+  const hasNextPage = currentPage < totalPages
+  const hasPreviousPage = currentPage > 1
 
-  const nextPage = useCallback(() => {
-    if (currentPage < totalPages) {
+  const handleGoToPage = (page: number) => {
+    const isValidPage = page >= 1 && page <= totalPages
+    
+    if (isValidPage) {
+      setCurrentPage(page)
+    }
+  }
+
+  const handleNextPage = () => {
+    if (hasNextPage) {
       setCurrentPage(currentPage + 1)
     }
-  }, [currentPage, totalPages])
+  }
 
-  const previousPage = useCallback(() => {
-    if (currentPage > 1) {
+  const handlePreviousPage = () => {
+    if (hasPreviousPage) {
       setCurrentPage(currentPage - 1)
     }
-  }, [currentPage])
+  }
 
-  const goToFirstPage = useCallback(() => {
-    setCurrentPage(1)
-  }, [])
-
-  const goToLastPage = useCallback(() => {
-    setCurrentPage(totalPages)
-  }, [totalPages])
-
-  const resetPage = useCallback(() => {
-    setCurrentPage(1)
-  }, [])
-
-  const canGoNext = currentPage < totalPages
-  const canGoPrevious = currentPage > 1
+  const handleSetPageSize = (size: number) => {
+    setPageSize(size)
+    setCurrentPage(DEFAULT_INITIAL_PAGE) // Reset to first page when changing page size
+  }
 
   return {
+    currentItems,
     currentPage,
     totalPages,
-    pageSize,
     totalItems,
-    startIndex: startIndex + 1, // +1 para exibição (1-based)
-    endIndex,
-    paginatedData,
-    goToPage,
-    nextPage,
-    previousPage,
-    goToFirstPage,
-    goToLastPage,
-    resetPage,
-    canGoNext,
-    canGoPrevious,
+    pageSize,
+    goToPage: handleGoToPage,
+    nextPage: handleNextPage,
+    previousPage: handlePreviousPage,
+    setPageSize: handleSetPageSize,
+    hasNextPage,
+    hasPreviousPage,
   }
 }
+
+export { usePagination }
+export type { UsePaginationReturn, UsePaginationOptions }

@@ -1,231 +1,288 @@
 "use client"
 
-import type React from "react"
-
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react"
+import { useAuth } from "@/lib/auth"
+import { usePermissions } from "@/hooks/use-permissions"
+import { useSiteSettings } from "@/hooks/use-site-settings"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { Loading } from "@/components/ui/loading"
 import { Breadcrumb } from "@/components/ui/breadcrumb"
-import { useAuth } from "@/lib/auth"
-import { useSiteSettings } from "@/hooks/use-site-settings"
-import { supabase } from "@/lib/supabase"
-import { validateSiteName } from "@/lib/validation"
-import { APP_CONFIG } from "@/lib/constants"
-import { Settings, Save, Globe, AlertCircle, CheckCircle } from "lucide-react"
-import { useState, useEffect } from "react"
+import { Separator } from "@/components/ui/separator"
+import { Settings, Save, Globe, Bell, Shield, Users } from "lucide-react"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation"
 
-export default function SettingsPage() {
-  const { user } = useAuth()
-  const { siteName, setSiteName, loading } = useSiteSettings()
-  const router = useRouter()
-  const [newSiteName, setNewSiteName] = useState("")
-  const [saving, setSaving] = useState(false)
-  const [validationError, setValidationError] = useState("")
-
-  useEffect(() => {
-    if (!loading) {
-      setNewSiteName(siteName)
-    }
-  }, [siteName, loading])
-
-  // Redirecionar se não for admin
-  useEffect(() => {
-    if (user && user.role !== "admin") {
-      router.replace("/dashboard")
-    }
-  }, [user, router])
+const SettingsPage = () => {
+  const { customUser } = useAuth()
+  const permissions = usePermissions()
+  const { settings, updateSettings, loading } = useSiteSettings()
+  const [formData, setFormData] = useState({
+    site_name: "",
+    site_description: "",
+    contact_email: "",
+    contact_phone: "",
+    address: "",
+    allow_public_submissions: true,
+    require_approval: true,
+    max_guests_per_submission: 10,
+    enable_notifications: false,
+  })
+  const [isSaving, setIsSaving] = useState(false)
 
   const handleInputChange = (value: string) => {
-    setNewSiteName(value)
-
-    // Validação em tempo real
-    const validation = validateSiteName(value)
-    setValidationError(validation.isValid ? "" : validation.error || "")
+    setFormData({ ...formData, site_name: value })
   }
 
-  const handleSaveSiteName = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (!user) return
-
-    const validation = validateSiteName(newSiteName)
-    if (!validation.isValid) {
-      setValidationError(validation.error || "")
-      return
-    }
-
-    setSaving(true)
-
+  const handleSaveSettings = async () => {
+    setIsSaving(true)
     try {
-      await setSiteName(newSiteName.trim())
-
-      // Log da atividade
-      await supabase.from("activity_logs").insert([
-        {
-          user_id: user.id,
-          action: "Configuração alterada",
-          details: `Nome do site alterado para "${newSiteName.trim()}"`,
-        },
-      ])
-
-      toast.success("Nome do site atualizado com sucesso!")
+      await updateSettings(formData)
+      toast.success("Configurações salvas com sucesso!")
     } catch (error) {
       console.error("Erro ao salvar configurações:", error)
-      toast.error("Erro ao salvar configurações. Tente novamente.")
+      toast.error("Erro ao salvar configurações")
     } finally {
-      setSaving(false)
+      setIsSaving(false)
     }
   }
 
-  if (!user) {
-    return null
+  const handleSwitchChange = (field: string, value: boolean) => {
+    setFormData({ ...formData, [field]: value })
   }
 
-  if (user.role !== "admin") {
+  const handleNumberChange = (field: string, value: string) => {
+    const numValue = parseInt(value) || 0
+    setFormData({ ...formData, [field]: numValue })
+  }
+
+  useEffect(() => {
+    if (settings) {
+      setFormData({
+        site_name: settings.site_name || "",
+        site_description: settings.site_description || "",
+        contact_email: settings.contact_email || "",
+        contact_phone: settings.contact_phone || "",
+        address: settings.address || "",
+        allow_public_submissions: settings.allow_public_submissions,
+        require_approval: settings.require_approval,
+        max_guests_per_submission: settings.max_guests_per_submission,
+        enable_notifications: settings.enable_notifications,
+      })
+    }
+  }, [settings])
+
+  if (!permissions.canManageSettings) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Acesso Negado</h1>
-          <p>Apenas administradores podem acessar esta página.</p>
+          <p>Você não tem permissão para acessar as configurações.</p>
         </div>
       </div>
     )
   }
 
   if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p>Carregando configurações...</p>
-        </div>
-      </div>
-    )
+    return <Loading text="Carregando configurações..." />
   }
 
-  const isFormValid = !validationError && newSiteName.trim() !== siteName
-  const characterCount = newSiteName.length
-
   return (
-    <div className="container mx-auto px-4 py-6 md:py-8">
+    <div className="container mx-auto px-4 py-8">
       <Breadcrumb />
 
-      <div className="mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold flex items-center">
-          <Settings className="w-6 h-6 mr-2" />
-          Configurações do Sistema
-        </h1>
-        <p className="text-muted-foreground">Gerencie as configurações gerais do sistema</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Configurações</h1>
+          <p className="text-muted-foreground">Gerencie as configurações do sistema</p>
+        </div>
+
+        <Button onClick={handleSaveSettings} disabled={isSaving}>
+          <Save className="w-4 h-4 mr-2" />
+          {isSaving ? "Salvando..." : "Salvar Configurações"}
+        </Button>
       </div>
 
-      <div className="max-w-2xl">
+      <div className="grid gap-6">
+        {/* Configurações Gerais */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <Globe className="w-5 h-5 mr-2" />
-              Configurações do Site
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="w-5 h-5" />
+              Configurações Gerais
             </CardTitle>
-            <CardDescription>Personalize as informações básicas do sistema</CardDescription>
+            <CardDescription>Configurações básicas do sistema</CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSaveSiteName} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="site_name" className="flex items-center justify-between">
-                  <span>Nome do Site</span>
-                  <span
-                    className={`text-xs ${
-                      characterCount > APP_CONFIG.VALIDATION.MAX_SITE_NAME_LENGTH
-                        ? "text-red-500"
-                        : characterCount > APP_CONFIG.VALIDATION.MAX_SITE_NAME_LENGTH * 0.8
-                          ? "text-yellow-500"
-                          : "text-muted-foreground"
-                    }`}
-                  >
-                    {characterCount}/{APP_CONFIG.VALIDATION.MAX_SITE_NAME_LENGTH}
-                  </span>
-                </Label>
-                <Input
-                  id="site_name"
-                  name="site_name"
-                  placeholder="Casa de Show"
-                  className={`h-12 text-base ${validationError ? "border-red-500" : ""}`}
-                  value={newSiteName}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  maxLength={APP_CONFIG.VALIDATION.MAX_SITE_NAME_LENGTH}
-                  required
-                />
+          <CardContent className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="site_name">Nome do Site</Label>
+              <Input
+                id="site_name"
+                value={formData.site_name}
+                onChange={(e) => handleInputChange(e.target.value)}
+                placeholder="Nome do seu sistema"
+              />
+            </div>
 
-                {validationError ? (
-                  <div className="flex items-center space-x-2 text-red-600">
-                    <AlertCircle className="w-4 h-4" />
-                    <span className="text-sm">{validationError}</span>
-                  </div>
-                ) : newSiteName.trim() && newSiteName.trim() !== siteName ? (
-                  <div className="flex items-center space-x-2 text-green-600">
-                    <CheckCircle className="w-4 h-4" />
-                    <span className="text-sm">Nome válido</span>
-                  </div>
-                ) : null}
+            <div className="grid gap-2">
+              <Label htmlFor="site_description">Descrição do Site</Label>
+              <Input
+                id="site_description"
+                value={formData.site_description}
+                onChange={(e) => setFormData({ ...formData, site_description: e.target.value })}
+                placeholder="Descrição do sistema"
+              />
+            </div>
 
-                <p className="text-sm text-muted-foreground">
-                  Este nome aparecerá na barra de navegação e no título do navegador
-                </p>
-              </div>
+            <div className="grid gap-2">
+              <Label htmlFor="contact_email">Email de Contato</Label>
+              <Input
+                id="contact_email"
+                type="email"
+                value={formData.contact_email}
+                onChange={(e) => setFormData({ ...formData, contact_email: e.target.value })}
+                placeholder="contato@exemplo.com"
+              />
+            </div>
 
-              {newSiteName.trim() && newSiteName.trim() !== siteName && !validationError && (
-                <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded p-4">
-                  <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">💡 Prévia das mudanças:</h4>
-                  <div className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-                    <div>
-                      <strong>Navbar:</strong> {newSiteName}
-                    </div>
-                    <div>
-                      <strong>Título do navegador:</strong> {newSiteName} - Listas
-                    </div>
-                  </div>
-                </div>
-              )}
+            <div className="grid gap-2">
+              <Label htmlFor="contact_phone">Telefone de Contato</Label>
+              <Input
+                id="contact_phone"
+                value={formData.contact_phone}
+                onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
+                placeholder="(11) 99999-9999"
+              />
+            </div>
 
-              <Button type="submit" className="w-full h-12 text-base" disabled={saving || !isFormValid}>
-                {saving ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                    Salvando...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-5 h-5 mr-2" />
-                    Salvar Configurações
-                  </>
-                )}
-              </Button>
-            </form>
+            <div className="grid gap-2">
+              <Label htmlFor="address">Endereço</Label>
+              <Input
+                id="address"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                placeholder="Endereço completo"
+              />
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="mt-6">
+        <Separator />
+
+        {/* Configurações de Submissão */}
+        <Card>
           <CardHeader>
-            <CardTitle>Informações do Sistema</CardTitle>
-            <CardDescription>Detalhes técnicos e versão</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Configurações de Submissão
+            </CardTitle>
+            <CardDescription>Configure como os convidados podem ser enviados</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="font-medium">Versão do Sistema:</span>
-              <span className="text-muted-foreground">1.0.0</span>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Permitir Submissões Públicas</Label>
+                <p className="text-sm text-muted-foreground">
+                  Permite que qualquer pessoa envie listas de convidados
+                </p>
+              </div>
+              <Switch
+                checked={formData.allow_public_submissions}
+                onCheckedChange={(checked) => handleSwitchChange("allow_public_submissions", checked)}
+              />
             </div>
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="font-medium">Nome atual:</span>
-              <span className="text-muted-foreground font-mono">{siteName}</span>
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Requer Aprovação</Label>
+                <p className="text-sm text-muted-foreground">
+                  Listas enviadas precisam ser aprovadas antes de serem aceitas
+                </p>
+              </div>
+              <Switch
+                checked={formData.require_approval}
+                onCheckedChange={(checked) => handleSwitchChange("require_approval", checked)}
+              />
             </div>
-            <div className="flex justify-between items-center py-2 border-b">
-              <span className="font-medium">Última atualização:</span>
-              <span className="text-muted-foreground">{new Date().toLocaleDateString("pt-BR")}</span>
+
+            <div className="grid gap-2">
+              <Label htmlFor="max_guests">Máximo de Convidados por Submissão</Label>
+              <Input
+                id="max_guests"
+                type="number"
+                min="1"
+                max="100"
+                value={formData.max_guests_per_submission}
+                onChange={(e) => handleNumberChange("max_guests_per_submission", e.target.value)}
+                placeholder="10"
+              />
+              <p className="text-sm text-muted-foreground">
+                Número máximo de convidados que podem ser enviados de uma vez
+              </p>
             </div>
-            <div className="flex justify-between items-center py-2">
-              <span className="font-medium">Administrador:</span>
-              <span className="text-muted-foreground">{user.name}</span>
+          </CardContent>
+        </Card>
+
+        <Separator />
+
+        {/* Configurações de Notificações */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="w-5 h-5" />
+              Configurações de Notificações
+            </CardTitle>
+            <CardDescription>Configure as notificações do sistema</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Ativar Notificações</Label>
+                <p className="text-sm text-muted-foreground">
+                  Receba notificações sobre novas submissões e eventos
+                </p>
+              </div>
+              <Switch
+                checked={formData.enable_notifications}
+                onCheckedChange={(checked) => handleSwitchChange("enable_notifications", checked)}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Separator />
+
+        {/* Informações do Sistema */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5" />
+              Informações do Sistema
+            </CardTitle>
+            <CardDescription>Informações sobre o sistema e usuário atual</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium">Usuário Atual</Label>
+                <p className="text-sm text-muted-foreground">{customUser?.name}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Função</Label>
+                <p className="text-sm text-muted-foreground">
+                  {customUser?.role === "admin" ? "Administrador" : customUser?.role === "portaria" ? "Portaria" : "Usuário"}
+                </p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Versão do Sistema</Label>
+                <p className="text-sm text-muted-foreground">v1.0.0</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Status</Label>
+                <p className="text-sm text-muted-foreground">Online</p>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -233,3 +290,5 @@ export default function SettingsPage() {
     </div>
   )
 }
+
+export default SettingsPage

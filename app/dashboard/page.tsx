@@ -35,7 +35,7 @@ interface DashboardStats {
   recentActivity: number
 }
 
-export default function DashboardPage() {
+const DashboardPage = () => {
   const { customUser, loading } = useAuth()
   const permissions = usePermissions()
   const [stats, setStats] = useState<DashboardStats>({
@@ -48,40 +48,40 @@ export default function DashboardPage() {
   })
   const [loadingStats, setLoadingStats] = useState(true)
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        // Buscar estatísticas básicas
-        const [eventsResult, guestsResult, usersResult, activityResult] = await Promise.all([
-          supabase.from("events").select("id, status"),
-          supabase.from("guest_lists").select("id, checked_in"),
-          supabase.from("users").select("id"),
-          supabase
-            .from("activity_logs")
-            .select("id")
-            .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
-        ])
+  const fetchStats = async () => {
+    try {
+      // Buscar estatísticas básicas
+      const [eventsResult, guestsResult, usersResult, activityResult] = await Promise.all([
+        supabase.from("events").select("id, status"),
+        supabase.from("guest_lists").select("id, checked_in"),
+        supabase.from("users").select("id"),
+        supabase
+          .from("activity_logs")
+          .select("id")
+          .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
+      ])
 
-        const events = eventsResult.data || []
-        const guests = guestsResult.data || []
-        const users = usersResult.data || []
-        const activity = activityResult.data || []
+      const events = eventsResult.data || []
+      const guests = guestsResult.data || []
+      const users = usersResult.data || []
+      const activity = activityResult.data || []
 
-        setStats({
-          totalEvents: events.length,
-          activeEvents: events.filter((e) => e.status === "active").length,
-          totalGuests: guests.length,
-          checkedInGuests: guests.filter((g) => g.checked_in).length,
-          totalUsers: users.length,
-          recentActivity: activity.length,
-        })
-      } catch (error) {
-        console.error("Erro ao carregar estatísticas:", error)
-      } finally {
-        setLoadingStats(false)
-      }
+      setStats({
+        totalEvents: events.length,
+        activeEvents: events.filter((e) => e.status === "active").length,
+        totalGuests: guests.length,
+        checkedInGuests: guests.filter((g) => g.checked_in).length,
+        totalUsers: users.length,
+        recentActivity: activity.length,
+      })
+    } catch (error) {
+      console.error("Erro ao carregar estatísticas:", error)
+    } finally {
+      setLoadingStats(false)
     }
+  }
 
+  useEffect(() => {
     if (customUser) {
       fetchStats()
     }
@@ -372,3 +372,5 @@ export default function DashboardPage() {
     </div>
   )
 }
+
+export default DashboardPage

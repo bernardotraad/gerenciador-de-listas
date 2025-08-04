@@ -1,16 +1,13 @@
 "use client"
 
-import { useEffect } from "react"
 import { useSiteSettings } from "@/hooks/use-site-settings"
 
-export function SiteTitle() {
-  const { settings, loading } = useSiteSettings()
+const SiteTitle = () => {
+  const { siteName } = useSiteSettings()
 
-  useEffect(() => {
-    if (!loading && settings?.site_name) {
-      document.title = settings.site_name
-    }
-  }, [settings?.site_name, loading])
-
-  return null
+  return (
+    <title>{siteName}</title>
+  )
 }
+
+export { SiteTitle }

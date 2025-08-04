@@ -14,76 +14,65 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+
+  const fetchUserData = async (authUser: any) => {
+    if (!authUser) return null
+
+    try {
+      const { data, error } = await supabase.from("users").select("*").eq("id", authUser.id).single()
+
+      if (error) {
+        console.error("Erro ao buscar dados do usuário:", error)
+        return null
+      }
+
+      console.log("Dados do usuário encontrados:", data)
+      return data as User
+    } catch (error) {
+      console.error("Erro ao buscar dados do usuário:", error)
+      return null
+    }
+  }
+
+  const initAuth = async () => {
+    try {
+      console.log("Iniciando verificação de autenticação...")
+
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession()
+
+      if (error) {
+        console.error("Erro ao obter sessão:", error)
+        setUser(null)
+        setLoading(false)
+        return
+      }
+
+      console.log("Sessão atual:", session?.user?.email || "Nenhuma sessão")
+
+      if (session?.user) {
+        const userData = await fetchUserData(session.user)
+        setUser(userData)
+      } else {
+        setUser(null)
+      }
+    } catch (error) {
+      console.error("Erro na inicialização da auth:", error)
+      setUser(null)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     let mounted = true
 
-    const fetchUserData = async (authUser: any) => {
-      if (!authUser || !mounted) return null
-
-      try {
-        const { data, error } = await supabase.from("users").select("*").eq("id", authUser.id).single()
-
-        if (error) {
-          console.error("Erro ao buscar dados do usuário:", error)
-          return null
-        }
-
-        console.log("Dados do usuário encontrados:", data)
-        return data as User
-      } catch (error) {
-        console.error("Erro ao buscar dados do usuário:", error)
-        return null
-      }
-    }
-
-    const initAuth = async () => {
-      try {
-        console.log("Iniciando verificação de autenticação...")
-
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession()
-
-        if (error) {
-          console.error("Erro ao obter sessão:", error)
-          if (mounted) {
-            setUser(null)
-            setLoading(false)
-          }
-          return
-        }
-
-        console.log("Sessão atual:", session?.user?.email || "Nenhuma sessão")
-
-        if (session?.user && mounted) {
-          const userData = await fetchUserData(session.user)
-          setUser(userData)
-        } else if (mounted) {
-          setUser(null)
-        }
-      } catch (error) {
-        console.error("Erro na inicialização da auth:", error)
-        if (mounted) {
-          setUser(null)
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false)
-        }
-      }
-    }
-
-    initAuth()
-
-    // Listener para mudanças de autenticação
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const handleAuthStateChange = async (event: string, session: any) => {
       console.log("Auth state changed:", event, session?.user?.email || "sem usuário")
 
       if (!mounted) return
@@ -96,7 +85,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setLoading(false)
-    })
+    }
+
+    initAuth()
+
+    // Listener para mudanças de autenticação
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(handleAuthStateChange)
 
     return () => {
       mounted = false
@@ -104,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const signIn = async (email: string, password: string) => {
+  const handleSignIn = async (email: string, password: string) => {
     console.log("Tentando fazer login com:", email)
 
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -120,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log("Login bem-sucedido:", data.user?.email)
   }
 
-  const signUp = async (email: string, password: string, name: string) => {
+  const handleSignUp = async (email: string, password: string, name: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -145,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const signOut = async () => {
+  const handleSignOut = async () => {
     console.log("Fazendo logout...")
     const { error } = await supabase.auth.signOut()
     if (error) {
@@ -159,15 +155,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     user,
     loading,
-    signIn,
-    signUp,
-    signOut,
+    signIn: handleSignIn,
+    signUp: handleSignUp,
+    signOut: handleSignOut,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export const useAuth = () => {
+const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) {
     // Em vez de lançar erro, retorna um contexto padrão para preview
@@ -182,3 +178,5 @@ export const useAuth = () => {
   }
   return context
 }
+
+export { AuthProvider, useAuth }

@@ -1,549 +1,305 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Breadcrumb } from "@/components/ui/breadcrumb"
-import { Loading } from "@/components/ui/loading"
-import { Pagination } from "@/components/ui/pagination"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth"
 import { usePermissions } from "@/hooks/use-permissions"
-import { usePagination } from "@/hooks/use-pagination"
-import { useDebounce } from "@/hooks/use-debounce"
-import { supabase, type Event, type GuestList } from "@/lib/supabase"
-import { APP_CONFIG } from "@/lib/constants"
-import { Search, UserCheck, Users, Filter } from "lucide-react"
-import { useEffect, useState, useMemo } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Loading } from "@/components/ui/loading"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
+import { CheckCircle, Search, User, Calendar, MapPin, X, Check } from "lucide-react"
+import { supabase } from "@/lib/supabase"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation"
 
-export default function CheckInPage() {
-  const { user } = useAuth()
+interface GuestList {
+  id: string
+  name: string
+  event_name: string
+  event_date: string
+  list_type: string
+  sector: string
+  checked_in: boolean
+  checked_in_at?: string
+  checked_in_by?: string
+}
+
+const CheckInPage = () => {
+  const { customUser } = useAuth()
   const permissions = usePermissions()
-  const router = useRouter()
-  const [events, setEvents] = useState<Event[]>([])
   const [guests, setGuests] = useState<GuestList[]>([])
   const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState<string | null>(null)
-  const [selectedEvent, setSelectedEvent] = useState<string>("all")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
   const [searchTerm, setSearchTerm] = useState("")
+  const [selectedGuest, setSelectedGuest] = useState<GuestList | null>(null)
 
-  const debouncedSearchTerm = useDebounce(searchTerm, APP_CONFIG.DEBOUNCE_DELAY)
-
-  // Redirecionar se não tiver permissão
-  useEffect(() => {
-    if (user && !permissions.canCheckIn) {
-      router.replace("/dashboard")
-    }
-  }, [user, permissions.canCheckIn, router])
-
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  const fetchData = async () => {
+  const handleLoadGuests = async () => {
     try {
-      // Buscar eventos ativos
-      const { data: eventsData, error: eventsError } = await supabase
-        .from("events")
-        .select("*")
-        .eq("status", "active")
-        .order("date", { ascending: true })
-
-      if (eventsError) throw eventsError
-
-      // Buscar todos os convidados com informações das listas e eventos
-      const { data: guestsData, error: guestsError } = await supabase
+      const { data, error } = await supabase
         .from("guest_lists")
         .select(`
-          *,
-          events (id, name, date, status),
-          event_lists (
-            id,
-            name,
-            event_id,
-            list_types (name, color),
-            sectors (name, color),
-            events!event_lists_event_id_fkey (id, name, date, status)
-          )
+          id,
+          name,
+          checked_in,
+          checked_in_at,
+          checked_in_by,
+          events!inner(name, date),
+          list_types!inner(name),
+          sectors!inner(name)
         `)
-        .order("guest_name", { ascending: true })
+        .order("name", { ascending: true })
 
-      if (guestsError) throw guestsError
+      if (error) throw error
 
-      setEvents(eventsData || [])
-      setGuests(guestsData || [])
+      const formattedGuests = data?.map((guest) => ({
+        id: guest.id,
+        name: guest.name,
+        event_name: guest.events?.name || "Evento não encontrado",
+        event_date: guest.events?.date || "",
+        list_type: guest.list_types?.name || "Tipo não encontrado",
+        sector: guest.sectors?.name || "Setor não encontrado",
+        checked_in: guest.checked_in || false,
+        checked_in_at: guest.checked_in_at,
+        checked_in_by: guest.checked_in_by,
+      })) || []
+
+      setGuests(formattedGuests)
     } catch (error) {
-      console.error("Erro ao carregar dados:", error)
-      toast.error("Erro ao carregar dados. Tente recarregar a página.")
+      console.error("Erro ao carregar convidados:", error)
+      toast.error("Erro ao carregar convidados")
     } finally {
       setLoading(false)
     }
   }
 
-  // Adicione esta função helper no início do componente, após os states
-  const getEventDate = (guest: GuestList) => {
-    // Primeiro tenta pegar a data do evento direto
-    if (guest.events?.date) {
-      return new Date(guest.events.date).toLocaleDateString("pt-BR")
-    }
-
-    // Depois tenta pegar da event_list -> events
-    if (guest.event_lists?.events?.date) {
-      return new Date(guest.event_lists.events.date).toLocaleDateString("pt-BR")
-    }
-
-    // Se não encontrar, busca pelo event_id
-    if (guest.event_id) {
-      const event = events.find((e) => e.id === guest.event_id)
-      if (event?.date) {
-        return new Date(event.date).toLocaleDateString("pt-BR")
-      }
-    }
-
-    return "Data não disponível"
-  }
-
-  // Filtros aplicados com useMemo para otimização
-  const filteredGuests = useMemo(() => {
-    let filtered = guests
-
-    // Filtro por evento
-    if (selectedEvent !== "all") {
-      filtered = filtered.filter(
-        (guest) => guest.event_id === selectedEvent || guest.event_lists?.events?.id === selectedEvent,
-      )
-    }
-
-    // Filtro por status de check-in
-    if (statusFilter === "checked-in") {
-      filtered = filtered.filter((guest) => guest.checked_in)
-    } else if (statusFilter === "pending") {
-      filtered = filtered.filter((guest) => !guest.checked_in)
-    }
-
-    // Filtro por busca
-    if (debouncedSearchTerm) {
-      const searchLower = debouncedSearchTerm.toLowerCase()
-      filtered = filtered.filter(
-        (guest) =>
-          guest.guest_name.toLowerCase().includes(searchLower) ||
-          guest.events?.name.toLowerCase().includes(searchLower) ||
-          guest.event_lists?.name?.toLowerCase().includes(searchLower),
-      )
-    }
-
-    return filtered
-  }, [guests, selectedEvent, statusFilter, debouncedSearchTerm])
-
-  const {
-    currentPage,
-    totalPages,
-    paginatedData,
-    goToPage,
-    nextPage,
-    previousPage,
-    totalItems,
-    startIndex,
-    endIndex,
-    resetPage,
-  } = usePagination({
-    data: filteredGuests,
-    pageSize: 20, // 20 convidados por página
-  })
-
-  // Reset página quando filtros mudam
-  useEffect(() => {
-    resetPage()
-  }, [selectedEvent, statusFilter, debouncedSearchTerm, resetPage])
-
-  const handleCheckIn = async (guestId: string, guestName: string) => {
-    setSubmitting(guestId)
+  const handleCheckIn = async (guestId: string) => {
     try {
       const { error } = await supabase
         .from("guest_lists")
         .update({
           checked_in: true,
           checked_in_at: new Date().toISOString(),
+          checked_in_by: customUser?.id,
         })
         .eq("id", guestId)
 
       if (error) throw error
 
-      const guest = guests.find((g) => g.id === guestId)
-
-      // Log da atividade
-      await supabase.from("activity_logs").insert([
-        {
-          user_id: user!.id,
-          event_id: guest?.event_id || guest?.event_lists?.events?.id,
-          action: "Check-in realizado",
-          details: `Check-in de "${guestName}" foi realizado por ${user!.name}`,
-        },
-      ])
-
-      toast.success(`Check-in de ${guestName} realizado com sucesso!`)
-      fetchData()
-    } catch (error) {
-      console.error("Erro ao realizar check-in:", error)
-      toast.error("Erro ao realizar check-in")
-    } finally {
-      setSubmitting(null)
+      toast.success("Check-in realizado com sucesso!")
+      handleLoadGuests()
+    } catch (error: any) {
+      console.error("Erro ao fazer check-in:", error)
+      toast.error(error.message || "Erro ao fazer check-in")
     }
   }
 
-  const handleCheckOut = async (guestId: string, guestName: string) => {
-    setSubmitting(guestId)
+  const handleCheckOut = async (guestId: string) => {
     try {
       const { error } = await supabase
         .from("guest_lists")
         .update({
           checked_in: false,
           checked_in_at: null,
+          checked_in_by: null,
         })
         .eq("id", guestId)
 
       if (error) throw error
 
-      const guest = guests.find((g) => g.id === guestId)
-
-      // Log da atividade
-      await supabase.from("activity_logs").insert([
-        {
-          user_id: user!.id,
-          event_id: guest?.event_id || guest?.event_lists?.events?.id,
-          action: "Check-in desfeito",
-          details: `Check-in de "${guestName}" foi desfeito por ${user!.name}`,
-        },
-      ])
-
-      toast.success(`Check-in de ${guestName} foi desfeito`)
-      fetchData()
-    } catch (error) {
-      console.error("Erro ao desfazer check-in:", error)
-      toast.error("Erro ao desfazer check-in")
-    } finally {
-      setSubmitting(null)
+      toast.success("Check-out realizado com sucesso!")
+      handleLoadGuests()
+    } catch (error: any) {
+      console.error("Erro ao fazer check-out:", error)
+      toast.error(error.message || "Erro ao fazer check-out")
     }
   }
 
-  const clearFilters = () => {
-    setSearchTerm("")
-    setSelectedEvent("all")
-    setStatusFilter("all")
+  const handleFilterGuests = () => {
+    return guests.filter((guest) =>
+      guest.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      guest.event_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      guest.list_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      guest.sector.toLowerCase().includes(searchTerm.toLowerCase())
+    )
   }
+
+  const handleGetEventDate = (guest: GuestList) => {
+    if (!guest.event_date) return "Data não definida"
+    return new Date(guest.event_date).toLocaleDateString("pt-BR")
+  }
+
+  const handleClearFilters = () => {
+    setSearchTerm("")
+  }
+
+  useEffect(() => {
+    if (customUser) {
+      handleLoadGuests()
+    }
+  }, [customUser])
 
   if (!permissions.canCheckIn) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Acesso Negado</h1>
-          <p>Você não tem permissão para acessar esta página.</p>
+          <p>Você não tem permissão para realizar check-ins.</p>
         </div>
       </div>
     )
   }
 
   if (loading) {
-    return <Loading text="Carregando check-in..." />
+    return <Loading text="Carregando convidados..." />
   }
 
-  const checkedInCount = filteredGuests.filter((g) => g.checked_in).length
-  const totalGuests = filteredGuests.length
-  const hasActiveFilters = selectedEvent !== "all" || statusFilter !== "all" || searchTerm.length > 0
+  const filteredGuests = handleFilterGuests()
+  const checkedInCount = guests.filter((guest) => guest.checked_in).length
+  const totalCount = guests.length
 
   return (
     <div className="container mx-auto px-4 py-8">
       <Breadcrumb />
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Check-in de Convidados</h1>
-        <p className="text-muted-foreground">Confirme a entrada dos convidados nos eventos</p>
+        <h1 className="text-3xl font-bold">Check-in</h1>
+        <p className="text-muted-foreground">Realize check-ins dos convidados</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+      {/* Estatísticas */}
+      <div className="grid gap-4 md:grid-cols-3 mb-6">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Convidados</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalGuests}</div>
-            <p className="text-xs text-muted-foreground">{hasActiveFilters ? "filtrados" : "nomes nas listas"}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Check-ins Realizados</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{checkedInCount}</div>
-            <p className="text-xs text-muted-foreground">pessoas já entraram</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Taxa de Presença</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalGuests > 0 ? Math.round((checkedInCount / totalGuests) * 100) : 0}%
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Total de Convidados</p>
+                <p className="text-2xl font-bold">{totalCount}</p>
+              </div>
+              <User className="h-8 w-8 text-muted-foreground" />
             </div>
-            <p className="text-xs text-muted-foreground">dos convidados presentes</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Check-ins Realizados</p>
+                <p className="text-2xl font-bold">{checkedInCount}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Taxa de Conversão</p>
+                <p className="text-2xl font-bold">
+                  {totalCount > 0 ? Math.round((checkedInCount / totalCount) * 100) : 0}%
+                </p>
+              </div>
+              <Check className="h-8 w-8 text-blue-600" />
+            </div>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Lista de Check-in</span>
-            <div className="flex items-center space-x-2 text-sm font-normal text-muted-foreground">
-              <span>
-                {totalItems} {totalItems === 1 ? "convidado" : "convidados"}
-              </span>
-              {totalPages > 1 && (
-                <>
-                  <span>•</span>
-                  <span>
-                    Página {currentPage} de {totalPages}
-                  </span>
-                </>
-              )}
-            </div>
-          </CardTitle>
-          <CardDescription>Gerencie a entrada dos convidados</CardDescription>
-
-          {/* Filtros */}
-          <div className="flex flex-col space-y-3 md:space-y-0 md:flex-row md:space-x-4">
-            <Select value={selectedEvent} onValueChange={setSelectedEvent}>
-              <SelectTrigger className="w-full md:w-[250px] h-12">
-                <SelectValue placeholder="Filtrar por evento" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os eventos</SelectItem>
-                {events.map((event) => (
-                  <SelectItem key={event.id} value={event.id}>
-                    {event.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-[200px] h-12">
-                <SelectValue placeholder="Status do check-in" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="checked-in">Já fizeram check-in</SelectItem>
-                <SelectItem value="pending">Aguardando check-in</SelectItem>
-              </SelectContent>
-            </Select>
-
+          <CardTitle>Lista de Convidados</CardTitle>
+          <CardDescription>Busque e realize check-ins dos convidados</CardDescription>
+          <div className="flex gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por nome..."
+                placeholder="Buscar por nome, evento, tipo ou setor..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12 text-base"
+                className="pl-8"
               />
             </div>
-
-            {hasActiveFilters && (
-              <Button variant="outline" onClick={clearFilters} className="h-12 bg-transparent">
-                <Filter className="w-4 h-4 mr-2" />
-                Limpar
+            {searchTerm && (
+              <Button variant="outline" onClick={handleClearFilters} aria-label="Limpar filtros">
+                <X className="h-4 w-4" />
               </Button>
             )}
           </div>
         </CardHeader>
         <CardContent>
-          {/* Versão mobile - Cards */}
-          <div className="block md:hidden space-y-3">
-            {paginatedData.map((guest) => (
-              <Card key={guest.id} className="p-4">
-                <div className="space-y-3">
-                  <div>
-                    <h3 className="font-medium text-lg">{guest.guest_name}</h3>
-                    <div className="text-sm text-muted-foreground space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <span>Evento:</span>
-                        <span>{guest.events?.name || guest.event_lists?.events?.name}</span>
-                      </div>
-                      {guest.event_lists && (
-                        <div className="flex items-center space-x-2">
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: guest.event_lists.list_types?.color }}
-                          />
-                          <span>{guest.event_lists.name}</span>
-                          <span>•</span>
-                          <span>{guest.event_lists.sectors?.name}</span>
-                        </div>
-                      )}
-                      <div>Data: {getEventDate(guest)}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
+          <div className="space-y-4">
+            {filteredGuests.map((guest) => (
+              <div
+                key={guest.id}
+                className={`flex items-center justify-between p-4 border rounded-lg ${
+                  guest.checked_in ? "bg-green-50 border-green-200" : "hover:bg-muted/50"
+                }`}
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <User className="h-5 w-5 text-primary" />
                     <div>
-                      {guest.checked_in ? (
-                        <div>
-                          <span className="text-green-600 font-medium">✓ Confirmado</span>
-                          {guest.checked_in_at && (
-                            <div className="text-xs text-muted-foreground">
-                              {new Date(guest.checked_in_at).toLocaleString("pt-BR")}
-                            </div>
-                          )}
+                      <h3 className="font-medium">{guest.name}</h3>
+                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="h-3 w-3" />
+                          <span>{guest.event_name}</span>
                         </div>
-                      ) : (
-                        <span className="text-muted-foreground">Pendente</span>
-                      )}
+                        <div className="flex items-center space-x-1">
+                          <MapPin className="h-3 w-3" />
+                          <span>{guest.sector}</span>
+                        </div>
+                      </div>
                     </div>
-
-                    {guest.checked_in ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleCheckOut(guest.id, guest.guest_name)}
-                        disabled={submitting === guest.id}
-                        className="h-10 px-4"
-                      >
-                        {submitting === guest.id ? "..." : "Desfazer"}
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={() => handleCheckIn(guest.id, guest.guest_name)}
-                        disabled={submitting === guest.id}
-                        className="h-10 px-6 bg-green-600 hover:bg-green-700"
-                      >
-                        {submitting === guest.id ? "..." : "Check-in"}
-                      </Button>
-                    )}
                   </div>
                 </div>
-              </Card>
+                <div className="flex items-center space-x-4">
+                  <Badge variant={guest.checked_in ? "default" : "secondary"}>
+                    {guest.list_type}
+                  </Badge>
+                  {guest.checked_in ? (
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="default" className="flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3" />
+                        Check-in Realizado
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCheckOut(guest.id)}
+                        aria-label={`Fazer check-out de ${guest.name}`}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => handleCheckIn(guest.id)}
+                      aria-label={`Fazer check-in de ${guest.name}`}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Check-in
+                    </Button>
+                  )}
+                </div>
+              </div>
             ))}
+
+            {filteredGuests.length === 0 && (
+              <div className="text-center py-8">
+                <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">
+                  {searchTerm ? "Nenhum convidado encontrado para a busca." : "Nenhum convidado cadastrado."}
+                </p>
+              </div>
+            )}
           </div>
-
-          {/* Versão desktop - Tabela */}
-          <div className="hidden md:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Evento / Lista</TableHead>
-                  <TableHead>Check-in</TableHead>
-                  <TableHead>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedData.map((guest) => (
-                  <TableRow key={guest.id}>
-                    <TableCell className="font-medium">{guest.guest_name}</TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="font-medium">{guest.events?.name || guest.event_lists?.events?.name}</div>
-                        {guest.event_lists && (
-                          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                            <div
-                              className="w-3 h-3 rounded-full"
-                              style={{ backgroundColor: guest.event_lists.list_types?.color }}
-                            />
-                            <span>{guest.event_lists.name}</span>
-                            <span>•</span>
-                            <span>{guest.event_lists.sectors?.name}</span>
-                          </div>
-                        )}
-                        <div className="text-sm text-muted-foreground">{getEventDate(guest)}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {guest.checked_in ? (
-                        <div>
-                          <span className="text-green-600 font-medium">✓ Confirmado</span>
-                          {guest.checked_in_at && (
-                            <div className="text-xs text-muted-foreground">
-                              {new Date(guest.checked_in_at).toLocaleString("pt-BR")}
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">Pendente</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {guest.checked_in ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleCheckOut(guest.id, guest.guest_name)}
-                          disabled={submitting === guest.id}
-                        >
-                          {submitting === guest.id ? "..." : "Desfazer"}
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          onClick={() => handleCheckIn(guest.id, guest.guest_name)}
-                          disabled={submitting === guest.id}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          {submitting === guest.id ? "..." : "Check-in"}
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Paginação */}
-          {totalPages > 1 && (
-            <div className="mt-6">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={goToPage}
-                totalItems={totalItems}
-                startIndex={startIndex}
-                endIndex={endIndex}
-                showInfo={true}
-              />
-            </div>
-          )}
-
-          {filteredGuests.length === 0 && (
-            <div className="text-center py-8">
-              <UserCheck className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">
-                {hasActiveFilters ? "Nenhum convidado encontrado" : "Nenhum convidado cadastrado"}
-              </h3>
-              <p className="text-muted-foreground">
-                {hasActiveFilters
-                  ? "Tente ajustar os filtros para encontrar o que procura."
-                  : "Não há convidados cadastrados para check-in."}
-              </p>
-              {hasActiveFilters && (
-                <Button variant="outline" onClick={clearFilters} className="mt-4 bg-transparent">
-                  Limpar filtros
-                </Button>
-              )}
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
   )
 }
+
+export default CheckInPage

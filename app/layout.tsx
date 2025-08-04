@@ -7,21 +7,28 @@ import { Toaster } from "@/components/ui/sonner"
 import { SiteTitle } from "@/components/site-title"
 import "./globals.css"
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Sistema de gerenciamento de listas e eventos" />
+      </head>
+      <body className="min-h-screen bg-background text-foreground antialiased">
+        <ThemeProvider 
+          attribute="class" 
+          defaultTheme="system" 
+          enableSystem 
+          disableTransitionOnChange
+        >
           <SiteSettingsProvider>
             <AuthProvider>
               <SiteTitle />
-              <div className="min-h-screen bg-background text-foreground">
+              <div className="flex min-h-screen flex-col">
                 <Navbar />
-                <main>{children}</main>
+                <main className="flex-1">
+                  {children}
+                </main>
               </div>
               <Toaster />
             </AuthProvider>
@@ -33,5 +40,9 @@ export default function RootLayout({
 }
 
 export const metadata = {
-      generator: 'v0.dev'
-    };
+  title: "Sistema de Gestão",
+  description: "Sistema de gerenciamento de listas e eventos",
+  generator: 'v0.dev'
+}
+
+export default RootLayout

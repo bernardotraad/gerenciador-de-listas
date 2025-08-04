@@ -1,80 +1,98 @@
 "use client"
 
-import type React from "react"
-import { createContext, useContext, useEffect, useState } from "react"
+import * as React from "react"
+import { ThemeProvider as NextThemesProvider } from "next-themes"
+import { type ThemeProviderProps } from "next-themes/dist/types"
 
-type Theme = "dark" | "light" | "system"
+type Theme = "light" | "dark" | "system"
 
-type ThemeProviderProps = {
-  children: React.ReactNode
-  defaultTheme?: Theme
-  storageKey?: string
-  attribute?: string
-  enableSystem?: boolean
-  disableTransitionOnChange?: boolean
-}
-
-type ThemeProviderState = {
+interface ThemeContextValue {
   theme: Theme
-  setTheme: (theme: Theme) => void
+  toggleTheme: () => void
+  setSystemTheme: () => void
 }
 
-const initialState: ThemeProviderState = {
-  theme: "system",
-  setTheme: () => null,
-}
+const STORAGE_KEY = "venue-ui-theme"
 
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
-
-export function ThemeProvider({
+const ThemeProvider = ({
   children,
   defaultTheme = "system",
-  storageKey = "venue-ui-theme",
+  storageKey = STORAGE_KEY,
   attribute = "class",
   enableSystem = true,
   disableTransitionOnChange = false,
   ...props
-}: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window !== "undefined") {
-      return (localStorage.getItem(storageKey) as Theme) || defaultTheme
-    }
-    return defaultTheme
-  })
-
-  useEffect(() => {
-    const root = window.document.documentElement
-
-    root.classList.remove("light", "dark")
-
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-      root.classList.add(systemTheme)
-      return
-    }
-
-    root.classList.add(theme)
-  }, [theme])
-
-  const value = {
-    theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
-    },
-  }
-
+}: ThemeProviderProps) => {
   return (
-    <ThemeProviderContext.Provider {...props} value={value}>
+    <NextThemesProvider
+      attribute={attribute}
+      defaultTheme={defaultTheme}
+      enableSystem={enableSystem}
+      disableTransitionOnChange={disableTransitionOnChange}
+      storageKey={storageKey}
+      {...props}
+    >
       {children}
-    </ThemeProviderContext.Provider>
+    </NextThemesProvider>
   )
 }
 
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext)
-
-  if (context === undefined) throw new Error("useTheme must be used within a ThemeProvider")
-
-  return context
+const getStoredTheme = (): Theme => {
+  if (typeof window === "undefined") {
+    return "system"
+  }
+  
+  const savedTheme = localStorage.getItem(STORAGE_KEY) as Theme
+  return savedTheme || "system"
 }
+
+const applyThemeToDocument = (theme: Theme) => {
+  if (typeof window === "undefined") {
+    return
+  }
+
+  const isDark = theme === "dark" || (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
+  document.documentElement.classList.toggle("dark", isDark)
+}
+
+const useTheme = (): ThemeContextValue => {
+  const [mounted, setMounted] = React.useState(false)
+  const [theme, setTheme] = React.useState<Theme>("system")
+
+  React.useEffect(() => {
+    setMounted(true)
+    const storedTheme = getStoredTheme()
+    setTheme(storedTheme)
+    applyThemeToDocument(storedTheme)
+  }, [])
+
+  const handleToggleTheme = () => {
+    const newTheme: Theme = theme === "light" ? "dark" : "light"
+    setTheme(newTheme)
+    localStorage.setItem(STORAGE_KEY, newTheme)
+    applyThemeToDocument(newTheme)
+  }
+
+  const handleSetSystemTheme = () => {
+    setTheme("system")
+    localStorage.setItem(STORAGE_KEY, "system")
+    applyThemeToDocument("system")
+  }
+
+  if (!mounted) {
+    return {
+      theme: "system",
+      toggleTheme: () => {},
+      setSystemTheme: () => {},
+    }
+  }
+
+  return {
+    theme,
+    toggleTheme: handleToggleTheme,
+    setSystemTheme: handleSetSystemTheme,
+  }
+}
+
+export { ThemeProvider, useTheme }
+export type { Theme, ThemeContextValue }

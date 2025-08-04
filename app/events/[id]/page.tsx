@@ -1,110 +1,148 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Breadcrumb } from "@/components/ui/breadcrumb"
-import { Loading } from "@/components/ui/loading"
+import { useState, useEffect } from "react"
+import { useParams } from "next/navigation"
 import { useAuth } from "@/lib/auth"
 import { usePermissions } from "@/hooks/use-permissions"
-import { supabase, type Event, type EventList } from "@/lib/supabase"
-import { Calendar, Clock, Users, List, Eye, Plus, MapPin, AlertCircle } from "lucide-react"
-import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { toast } from "sonner"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Loading } from "@/components/ui/loading"
+import { Breadcrumb } from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import { Calendar, MapPin, Clock, Users, Edit, Trash2, List, Plus, Eye } from "lucide-react"
 import Link from "next/link"
+import { supabase } from "@/lib/supabase"
+import { toast } from "sonner"
 
-export default function EventDetailPage() {
-  const { user } = useAuth()
-  const permissions = usePermissions()
-  const router = useRouter()
+interface Event {
+  id: string
+  name: string
+  description: string
+  date: string
+  time: string
+  location: string
+  status: "active" | "inactive" | "completed"
+  max_capacity: number
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+interface EventList {
+  id: string
+  name: string
+  list_type_id: string
+  sector_id: string
+  is_active: boolean
+  max_capacity: number
+  current_count: number
+  list_types: { name: string; color: string }
+  sectors: { name: string; color: string }
+}
+
+const EventDetailPage = () => {
   const params = useParams()
-  const eventId = params.id as string
-
+  const { customUser } = useAuth()
+  const permissions = usePermissions()
   const [event, setEvent] = useState<Event | null>(null)
   const [eventLists, setEventLists] = useState<EventList[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (!permissions.canViewEvents) {
-      router.replace("/dashboard")
-      return
-    }
-    fetchData()
-  }, [eventId, permissions.canViewEvents, router])
+  const eventId = params.id as string
 
-  const fetchData = async () => {
+  const handleLoadEventData = async () => {
     try {
-      // Buscar evento
-      const { data: eventData, error: eventError } = await supabase
-        .from("events")
-        .select("*")
-        .eq("id", eventId)
-        .single()
+      const [eventResult, listsResult] = await Promise.all([
+        supabase.from("events").select("*").eq("id", eventId).single(),
+        supabase
+          .from("event_lists")
+          .select(`
+            *,
+            list_types (name, color),
+            sectors (name, color)
+          `)
+          .eq("event_id", eventId)
+          .order("name", { ascending: true }),
+      ])
 
-      if (eventError) throw eventError
-      setEvent(eventData)
+      if (eventResult.error) throw eventResult.error
+      if (listsResult.error) throw listsResult.error
 
-      // Buscar listas do evento com contadores
-      const { data: listsData, error: listsError } = await supabase
-        .from("event_lists")
-        .select(`
-          *,
-          list_types (name, color),
-          sectors (name, color),
-          users (name)
-        `)
-        .eq("event_id", eventId)
-        .eq("is_active", true)
-        .order("created_at", { ascending: false })
-
-      if (listsError) throw listsError
-
-      // Buscar contadores para cada lista
-      const listsWithCounts = await Promise.all(
-        (listsData || []).map(async (list) => {
-          const { count: totalGuests } = await supabase
-            .from("guest_lists")
-            .select("*", { count: "exact", head: true })
-            .eq("event_list_id", list.id)
-
-          const { count: checkedIn } = await supabase
-            .from("guest_lists")
-            .select("*", { count: "exact", head: true })
-            .eq("event_list_id", list.id)
-            .eq("checked_in", true)
-
-          return {
-            ...list,
-            _count: {
-              guest_lists: totalGuests || 0,
-              checked_in: checkedIn || 0,
-            },
-          }
-        }),
-      )
-
-      setEventLists(listsWithCounts)
+      setEvent(eventResult.data)
+      setEventLists(listsResult.data || [])
     } catch (error) {
-      console.error("Erro ao carregar dados:", error)
-      toast.error("Erro ao carregar dados")
+      console.error("Erro ao carregar dados do evento:", error)
+      toast.error("Erro ao carregar dados do evento")
     } finally {
       setLoading(false)
     }
   }
+
+  const handleDeleteEvent = async () => {
+    if (!event) return
+
+    try {
+      const { error } = await supabase.from("events").delete().eq("id", event.id)
+
+      if (error) throw error
+
+      toast.success("Evento excluído com sucesso!")
+      window.location.href = "/events"
+    } catch (error: any) {
+      console.error("Erro ao excluir evento:", error)
+      toast.error(error.message || "Erro ao excluir evento")
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
+  }
+
+  const formatTime = (timeString: string) => {
+    return timeString
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "active":
+        return <Badge variant="default">Ativo</Badge>
+      case "inactive":
+        return <Badge variant="secondary">Inativo</Badge>
+      case "completed":
+        return <Badge variant="outline">Concluído</Badge>
+      default:
+        return <Badge variant="secondary">{status}</Badge>
+    }
+  }
+
+  const getCapacityPercentage = (current: number, max: number) => {
+    return Math.round((current / max) * 100)
+  }
+
+  useEffect(() => {
+    if (eventId) {
+      handleLoadEventData()
+    }
+  }, [eventId])
 
   if (!permissions.canViewEvents) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Acesso Negado</h1>
-          <p>Você não tem permissão para acessar esta página.</p>
+          <p>Você não tem permissão para visualizar eventos.</p>
         </div>
       </div>
     )
   }
 
   if (loading) {
-    return <Loading text="Carregando evento..." />
+    return <Loading text="Carregando detalhes do evento..." />
   }
 
   if (!event) {
@@ -112,227 +150,290 @@ export default function EventDetailPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Evento não encontrado</h1>
+          <p>O evento que você está procurando não existe ou foi removido.</p>
           <Link href="/events">
-            <Button>Voltar para Eventos</Button>
+            <Button className="mt-4">Voltar para Eventos</Button>
           </Link>
         </div>
       </div>
     )
   }
 
-  const totalGuests = eventLists.reduce((sum, list) => sum + (list._count?.guest_lists || 0), 0)
-  const totalCheckedIn = eventLists.reduce((sum, list) => sum + (list._count?.checked_in || 0), 0)
+  const totalGuests = eventLists.reduce((sum, list) => sum + list.current_count, 0)
+  const totalCapacity = eventLists.reduce((sum, list) => sum + list.max_capacity, 0)
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <Breadcrumb items={[{ label: "Eventos", href: "/events" }, { label: event.name }]} />
+      <Breadcrumb />
 
-      <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center md:space-y-0 mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold">{event.name}</h1>
           <p className="text-muted-foreground">{event.description}</p>
         </div>
 
-        <div className="flex space-x-2">
-          <Link href={`/events/${eventId}/lists`}>
-            <Button>
-              <List className="w-4 h-4 mr-2" />
-              Gerenciar Listas
+        <div className="flex items-center space-x-2">
+          {permissions.canEditEvents && (
+            <Link href={`/events/${event.id}/edit`}>
+              <Button variant="outline">
+                <Edit className="w-4 h-4 mr-2" />
+                Editar
+              </Button>
+            </Link>
+          )}
+          {permissions.canDeleteEvents && (
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteEvent}
+              aria-label="Excluir evento"
+              tabIndex={0}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Excluir
             </Button>
-          </Link>
-          <Link href="/events">
-            <Button variant="outline">Voltar</Button>
-          </Link>
+          )}
         </div>
       </div>
 
-      {/* Informações do evento */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* Informações do Evento */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Data do Evento</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{new Date(event.date).toLocaleDateString("pt-BR")}</div>
-            {event.time && (
-              <p className="text-xs text-muted-foreground flex items-center mt-1">
-                <Clock className="w-3 h-3 mr-1" />
-                {event.time}
-              </p>
-            )}
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Data</p>
+                <p className="text-2xl font-bold">{formatDate(event.date)}</p>
+              </div>
+              <Calendar className="h-8 w-8 text-muted-foreground" />
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Capacidade</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{event.max_capacity}</div>
-            <p className="text-xs text-muted-foreground">pessoas</p>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Horário</p>
+                <p className="text-2xl font-bold">{formatTime(event.time)}</p>
+              </div>
+              <Clock className="h-8 w-8 text-muted-foreground" />
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Convidados</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalGuests}</div>
-            <p className="text-xs text-muted-foreground">nomes nas listas</p>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Local</p>
+                <p className="text-2xl font-bold">{event.location}</p>
+              </div>
+              <MapPin className="h-8 w-8 text-muted-foreground" />
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Check-ins</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalCheckedIn}</div>
-            <p className="text-xs text-muted-foreground">confirmados</p>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Status</p>
+                <div className="mt-1">{getStatusBadge(event.status)}</div>
+              </div>
+              <Users className="h-8 w-8 text-muted-foreground" />
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Status do evento */}
-      <Card className="mb-8">
+      {/* Estatísticas */}
+      <div className="grid gap-6 md:grid-cols-3 mb-8">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Total de Convidados</p>
+                <p className="text-2xl font-bold">{totalGuests}</p>
+              </div>
+              <Users className="h-8 w-8 text-muted-foreground" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Capacidade Total</p>
+                <p className="text-2xl font-bold">{totalCapacity}</p>
+              </div>
+              <List className="h-8 w-8 text-muted-foreground" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Taxa de Ocupação</p>
+                <p className="text-2xl font-bold">
+                  {totalCapacity > 0 ? getCapacityPercentage(totalGuests, totalCapacity) : 0}%
+                </p>
+              </div>
+              <Eye className="h-8 w-8 text-muted-foreground" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Listas do Evento */}
+      <Card>
         <CardHeader>
-          <CardTitle>Status do Evento</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div
-                className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  event.status === "active"
-                    ? "bg-green-100 text-green-800"
-                    : event.status === "inactive"
-                      ? "bg-gray-100 text-gray-800"
-                      : "bg-blue-100 text-blue-800"
-                }`}
-              >
-                {event.status === "active" ? "Ativo" : event.status === "inactive" ? "Inativo" : "Finalizado"}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Criado em {new Date(event.created_at).toLocaleDateString("pt-BR")}
-              </div>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <CardTitle>Listas do Evento</CardTitle>
+              <CardDescription>Gerencie as listas de convidados para este evento</CardDescription>
             </div>
 
-            {totalGuests > 0 && (
-              <div className="text-right">
-                <div className="text-sm font-medium">
-                  Taxa de Presença: {Math.round((totalCheckedIn / totalGuests) * 100)}%
+            {permissions.canManageLists && (
+              <Link href={`/events/${event.id}/lists/new`}>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nova Lista
+                </Button>
+              </Link>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {eventLists.map((list) => (
+              <div key={list.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <div
+                      className="w-4 h-4 rounded-full"
+                      style={{ backgroundColor: list.list_types.color }}
+                    />
+                    <div>
+                      <h3 className="font-medium">{list.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {list.list_types.name} • {list.sectors.name}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  {totalCheckedIn} de {totalGuests} convidados
+                <div className="flex items-center space-x-4">
+                  <div className="text-right">
+                    <div className="text-sm text-muted-foreground">
+                      {list.current_count} / {list.max_capacity} convidados
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {getCapacityPercentage(list.current_count, list.max_capacity)}% ocupado
+                    </div>
+                  </div>
+                  <Badge variant={list.is_active ? "default" : "secondary"}>
+                    {list.is_active ? "Ativa" : "Inativa"}
+                  </Badge>
+                  <div className="flex items-center space-x-2">
+                    <Link href={`/events/${event.id}/lists/${list.id}`}>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        aria-label={`Ver detalhes da lista ${list.name}`}
+                        tabIndex={0}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    {permissions.canManageLists && (
+                      <Link href={`/events/${event.id}/lists/${list.id}/edit`}>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          aria-label={`Editar lista ${list.name}`}
+                          tabIndex={0}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
                 </div>
+              </div>
+            ))}
+
+            {eventLists.length === 0 && (
+              <div className="text-center py-8">
+                <List className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">Nenhuma lista criada para este evento</p>
+                {permissions.canManageLists && (
+                  <Link href={`/events/${event.id}/lists/new`}>
+                    <Button className="mt-4">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Criar Primeira Lista
+                    </Button>
+                  </Link>
+                )}
               </div>
             )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Listas do evento */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Listas do Evento</span>
-            <span className="text-sm font-normal text-muted-foreground">
-              {eventLists.length} {eventLists.length === 1 ? "lista" : "listas"}
-            </span>
-          </CardTitle>
-          <CardDescription>
-            Diferentes tipos de listas para organizar os convidados por categoria e setor
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {eventLists.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {eventLists.map((list) => (
-                <Card key={list.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center space-x-2 text-base">
-                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: list.list_types?.color }} />
-                      <span>{list.name}</span>
-                    </CardTitle>
-                    <CardDescription className="text-sm">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className="font-medium">Tipo:</span>
-                        <span>{list.list_types?.name}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="w-3 h-3" />
-                        <span className="font-medium">Setor:</span>
-                        <span>{list.sectors?.name}</span>
-                      </div>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="grid grid-cols-2 gap-4 text-center mb-4">
-                      <div>
-                        <div className="text-xl font-bold text-blue-600">{list._count?.guest_lists || 0}</div>
-                        <div className="text-xs text-muted-foreground">Convidados</div>
-                      </div>
-                      <div>
-                        <div className="text-xl font-bold text-green-600">{list._count?.checked_in || 0}</div>
-                        <div className="text-xs text-muted-foreground">Check-ins</div>
-                      </div>
-                    </div>
+      <Separator className="my-8" />
 
-                    {list.max_capacity && (
-                      <div className="space-y-2 mb-4">
-                        <div className="flex justify-between text-xs">
-                          <span>Ocupação</span>
-                          <span>
-                            {list._count?.guest_lists || 0}/{list.max_capacity}
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-1.5">
-                          <div
-                            className="bg-blue-600 h-1.5 rounded-full"
-                            style={{
-                              width: `${Math.min(((list._count?.guest_lists || 0) / list.max_capacity) * 100, 100)}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
+      {/* Informações Adicionais */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Informações do Evento</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Criado em:</span>
+              <span className="text-sm">{formatDate(event.created_at)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Última atualização:</span>
+              <span className="text-sm">{formatDate(event.updated_at)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Capacidade máxima:</span>
+              <span className="text-sm">{event.max_capacity} pessoas</span>
+            </div>
+          </CardContent>
+        </Card>
 
-                    <Link href={`/events/${eventId}/lists/${list.id}`}>
-                      <Button size="sm" className="w-full">
-                        <Eye className="w-4 h-4 mr-2" />
-                        Ver Lista
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <AlertCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">Nenhuma lista criada</h3>
-              <p className="text-muted-foreground mb-4">
-                {permissions.canManageEvents
-                  ? "Crie listas para organizar os convidados por tipo e setor."
-                  : "Não há listas disponíveis para este evento."}
-              </p>
-              {permissions.canManageEvents && (
-                <Link href={`/events/${eventId}/lists`}>
-                  <Button>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Criar Primeira Lista
-                  </Button>
-                </Link>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Ações Rápidas</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Link href={`/events/${event.id}/lists`}>
+              <Button variant="outline" className="w-full justify-start">
+                <List className="w-4 h-4 mr-2" />
+                Ver Todas as Listas
+              </Button>
+            </Link>
+            <Link href="/check-in">
+              <Button variant="outline" className="w-full justify-start">
+                <Users className="w-4 h-4 mr-2" />
+                Fazer Check-in
+              </Button>
+            </Link>
+            <Link href="/guest-lists">
+              <Button variant="outline" className="w-full justify-start">
+                <Eye className="w-4 h-4 mr-2" />
+                Ver Convidados
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
+
+export default EventDetailPage

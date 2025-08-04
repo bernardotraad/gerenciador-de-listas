@@ -11,18 +11,10 @@ import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 
-export default function LoginPage() {
+const LoginPage = () => {
   const { user, signIn, signUp, loading } = useAuth()
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  // Redirecionar se já estiver logado
-  useEffect(() => {
-    if (!loading && user) {
-      console.log("Usuário já logado, redirecionando:", user.email)
-      router.replace("/dashboard")
-    }
-  }, [user, loading, router])
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -63,6 +55,14 @@ export default function LoginPage() {
       setIsSubmitting(false)
     }
   }
+
+  // Redirecionar se já estiver logado
+  useEffect(() => {
+    if (!loading && user) {
+      console.log("Usuário já logado, redirecionando:", user.email)
+      router.replace("/dashboard")
+    }
+  }, [user, loading, router])
 
   // Mostrar loading se ainda estiver verificando autenticação
   if (loading) {
@@ -106,11 +106,19 @@ export default function LoginPage() {
                     placeholder="seu@email.com"
                     className="h-12 text-base"
                     required
+                    aria-label="Email para login"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Senha</Label>
-                  <Input id="password" name="password" type="password" className="h-12 text-base" required />
+                  <Input 
+                    id="password" 
+                    name="password" 
+                    type="password" 
+                    className="h-12 text-base" 
+                    required 
+                    aria-label="Senha para login"
+                  />
                 </div>
                 <Button type="submit" className="w-full h-12 text-base" disabled={isSubmitting}>
                   {isSubmitting ? "Entrando..." : "Entrar"}
@@ -122,15 +130,34 @@ export default function LoginPage() {
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome</Label>
-                  <Input id="name" name="name" placeholder="Seu nome completo" required />
+                  <Input 
+                    id="name" 
+                    name="name" 
+                    placeholder="Seu nome completo" 
+                    required 
+                    aria-label="Nome completo para cadastro"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" name="email" type="email" placeholder="seu@email.com" required />
+                  <Input 
+                    id="email" 
+                    name="email" 
+                    type="email" 
+                    placeholder="seu@email.com" 
+                    required 
+                    aria-label="Email para cadastro"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Senha</Label>
-                  <Input id="password" name="password" type="password" required />
+                  <Input 
+                    id="password" 
+                    name="password" 
+                    type="password" 
+                    required 
+                    aria-label="Senha para cadastro"
+                  />
                 </div>
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                   {isSubmitting ? "Criando conta..." : "Criar conta"}
@@ -143,3 +170,5 @@ export default function LoginPage() {
     </div>
   )
 }
+
+export default LoginPage
