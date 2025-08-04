@@ -2,8 +2,8 @@
 const nextConfig = {
   // Otimizações para Vercel
   experimental: {
-    // Otimizações de performance
-    optimizeCss: true,
+    // Otimizações de performance (desabilitado temporariamente)
+    // optimizeCss: true,
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
 

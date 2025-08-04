@@ -1,7 +1,7 @@
 import { Loading } from "@/components/ui/loading"
 
-const Loading = () => {
+const SettingsLoading = () => {
   return <Loading text="Carregando configurações..." />
 }
 
-export default Loading
+export default SettingsLoading

@@ -1,7 +1,7 @@
 import { Loading } from "@/components/ui/loading"
 
-const Loading = () => {
+const ListDetailsLoading = () => {
   return <Loading text="Carregando detalhes da lista..." />
 }
 
-export default Loading
+export default ListDetailsLoading
