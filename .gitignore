@@ -42,3 +42,5 @@ coverage/
 
 # Git worktrees
 .worktrees/
+/.claude
+/nextapp/.claude
