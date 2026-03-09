@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
 import {
     LogOut, Users, LayoutDashboard, Calendar, Inbox,
@@ -57,7 +58,14 @@ export function TopBar({
     submissoesPendentes = 0,
 }: TopBarProps) {
     const pathname = usePathname()
+    const router = useRouter()
     const [mobileOpen, setMobileOpen] = useState(false)
+
+    async function handleLogout() {
+        const supabase = createClient()
+        await supabase.auth.signOut()
+        router.push('/login')
+    }
     const homeHref = userRole === 'Portaria' ? '/portaria' : '/admin/dashboard'
     const initials = userName?.trim().charAt(0)?.toUpperCase() ?? '?'
 
@@ -187,16 +195,15 @@ export function TopBar({
                         )}
                     </Link>
 
-                    <form action="/api/auth/logout" method="POST">
-                        <button
-                            type="submit"
-                            title="Sair"
-                            className="hidden sm:flex items-center gap-1.5 text-zinc-500 hover:text-zinc-200 text-sm transition-colors px-2 py-1.5 rounded-md hover:bg-zinc-800"
-                        >
-                            <LogOut className="w-4 h-4 shrink-0" />
-                            <span className="hidden lg:inline">Sair</span>
-                        </button>
-                    </form>
+                    <button
+                        type="button"
+                        onClick={handleLogout}
+                        title="Sair"
+                        className="hidden sm:flex items-center gap-1.5 text-zinc-500 hover:text-zinc-200 text-sm transition-colors px-2 py-1.5 rounded-md hover:bg-zinc-800"
+                    >
+                        <LogOut className="w-4 h-4 shrink-0" />
+                        <span className="hidden lg:inline">Sair</span>
+                    </button>
 
                     {/* Mobile hamburger */}
                     <button
@@ -274,15 +281,14 @@ export function TopBar({
                             Meu perfil
                         </Link>
 
-                        <form action="/api/auth/logout" method="POST">
-                            <button
-                                type="submit"
-                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
-                            >
-                                <LogOut className="w-4 h-4 shrink-0 text-zinc-600" />
-                                Sair
-                            </button>
-                        </form>
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+                        >
+                            <LogOut className="w-4 h-4 shrink-0 text-zinc-600" />
+                            Sair
+                        </button>
                     </nav>
                 </SheetContent>
             </Sheet>
