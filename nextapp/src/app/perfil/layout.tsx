@@ -33,7 +33,9 @@ export default async function PerfilLayout({ children }: { children: React.React
                 boateNome={boate?.nome ?? undefined}
                 boateLogoUrl={boate?.logo_url ?? null}
                 userName={profile.nome}
+                userAvatarUrl={profile.avatar_url ?? null}
                 userRole={role}
+                boateId={boate?.id ?? undefined}
             />
             <main className="max-w-2xl mx-auto px-4 sm:px-6 pt-16 pb-8">
                 {children}

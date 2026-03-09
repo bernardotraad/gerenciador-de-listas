@@ -34,6 +34,16 @@ export default async function EventosPage() {
 
     const boateId = userProfile?.boate_id ?? null
 
+    const { data: boateData } = boateId
+        ? await supabase
+            .from('boates')
+            .select('capacidade_padrao')
+            .eq('id', boateId)
+            .single()
+        : { data: null }
+
+    const capacidadePadrao = boateData?.capacidade_padrao ?? 100
+
     const { data: listaTiposRaw } = boateId
         ? await supabase
             .from('lista_tipos')
@@ -65,7 +75,7 @@ export default async function EventosPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     {boateId && <CopiarLinkBoate boateId={boateId} />}
-                    <NovoEventoDialog listaTipos={listaTiposAtivos} />
+                    <NovoEventoDialog listaTipos={listaTiposAtivos} capacidadePadrao={capacidadePadrao} />
                 </div>
             </div>
 

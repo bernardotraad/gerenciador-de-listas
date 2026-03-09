@@ -76,6 +76,87 @@ export async function criarSubmissao(input: SubmissaoInput) {
     return { success: true, count: parseResult.names.length }
 }
 
+// ─── Usuário logado (aprovação automática) ───────────────────────────────────
+
+export async function criarSubmissaoLogada(input: SubmissaoInput) {
+    const parsed = submissaoSchema.safeParse(input)
+    if (!parsed.success) return { error: parsed.error.issues[0].message }
+    const data = parsed.data
+
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'Não autenticado' }
+
+    const { data: profile } = await supabase
+        .from('users')
+        .select('role, boate_id')
+        .eq('id', user.id)
+        .single()
+
+    if (profile?.role !== 'Admin' && profile?.role !== 'Portaria') {
+        return { error: 'Sem permissão' }
+    }
+
+    const svc = createServiceClient()
+
+    const { data: evento } = await svc
+        .from('eventos_instancia')
+        .select('id, status')
+        .eq('id', data.evento_instancia_id)
+        .eq('status', 'Ativo')
+        .single()
+    if (!evento) return { error: 'Evento não encontrado ou inativo.' }
+
+    const { data: junctionCheck } = await svc
+        .from('evento_lista_tipos')
+        .select('lista_tipo_id')
+        .eq('evento_instancia_id', data.evento_instancia_id)
+        .eq('lista_tipo_id', data.lista_tipo_id)
+        .maybeSingle()
+    if (!junctionCheck) return { error: 'Tipo de lista inválido para este evento.' }
+
+    const parseResult = parseNomes(data.raw_text)
+    if (parseResult.names.length === 0) return { error: 'Nenhum nome válido encontrado.' }
+
+    const { data: sub, error: subErr } = await supabase
+        .from('guest_submissions')
+        .insert({
+            evento_instancia_id: data.evento_instancia_id,
+            lista_tipo_id: data.lista_tipo_id,
+            submitter_label: data.submitter_label,
+            submitter_email: data.submitter_email,
+            raw_text: data.raw_text,
+            parsed_names: parseResult.names,
+            status: 'Aprovado',
+            submission_ip: 'internal',
+            approved_by: user.id,
+            approved_at: new Date().toISOString(),
+        })
+        .select('id')
+        .single()
+
+    if (subErr) return { error: subErr.message }
+
+    const records = parseResult.names.map((nome) => ({
+        evento_instancia_id: data.evento_instancia_id,
+        submission_id: sub.id,
+        nome,
+        lista_tipo_id: data.lista_tipo_id,
+        source: 'Submission' as const,
+        status: 'Aprovado' as const,
+        added_by: user.id,
+    }))
+
+    const { error: recErr } = await supabase
+        .from('guest_records')
+        .insert(records)
+
+    if (recErr) return { error: recErr.message }
+
+    revalidatePath('/admin/submissoes')
+    return { success: true, count: parseResult.names.length }
+}
+
 // ─── Admin ───────────────────────────────────────────────────────────────────
 
 export async function aprovarSubmissao(id: string, notes?: string) {

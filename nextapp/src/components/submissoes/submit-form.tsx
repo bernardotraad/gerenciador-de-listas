@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { parseNomes } from '@/lib/schemas/submissoes'
-import { criarSubmissao } from '@/lib/actions/submissoes'
+import { criarSubmissao, criarSubmissaoLogada } from '@/lib/actions/submissoes'
 import { CheckCircle, Loader2 } from 'lucide-react'
 
 interface ListaTipo {
@@ -22,14 +22,17 @@ interface Evento {
 interface SubmitFormProps {
     boateId: string
     eventos: Evento[]
+    initialNome?: string
+    initialEmail?: string
+    isLoggedIn?: boolean
 }
 
-export function SubmitForm({ boateId, eventos }: SubmitFormProps) {
+export function SubmitForm({ boateId, eventos, initialNome, initialEmail, isLoggedIn }: SubmitFormProps) {
     const [eventoId, setEventoId] = useState(eventos[0]?.id ?? '')
     const [listaTipoId, setListaTipoId] = useState(eventos[0]?.listaTipos[0]?.id ?? '')
     const [rawText, setRawText] = useState('')
-    const [submitterLabel, setSubmitterLabel] = useState('')
-    const [submitterEmail, setSubmitterEmail] = useState('')
+    const [submitterLabel, setSubmitterLabel] = useState(initialNome ?? '')
+    const [submitterEmail, setSubmitterEmail] = useState(initialEmail ?? '')
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState<{ count: number; eventoNome: string } | null>(null)
     const [pending, startTransition] = useTransition()
@@ -48,7 +51,8 @@ export function SubmitForm({ boateId, eventos }: SubmitFormProps) {
         e.preventDefault()
         setError(null)
         startTransition(async () => {
-            const result = await criarSubmissao({
+            const action = isLoggedIn ? criarSubmissaoLogada : criarSubmissao
+            const result = await action({
                 evento_instancia_id: eventoId,
                 lista_tipo_id: listaTipoId,
                 submitter_label: submitterLabel,
@@ -63,8 +67,8 @@ export function SubmitForm({ boateId, eventos }: SubmitFormProps) {
                     eventoNome: eventoSelecionado?.nome ?? '',
                 })
                 setRawText('')
-                setSubmitterLabel('')
-                setSubmitterEmail('')
+                if (!initialNome) setSubmitterLabel('')
+                if (!initialEmail) setSubmitterEmail('')
             }
         })
     }
@@ -81,7 +85,7 @@ export function SubmitForm({ boateId, eventos }: SubmitFormProps) {
                         {success.count} nome{success.count !== 1 ? 's' : ''} submetido{success.count !== 1 ? 's' : ''} para {success.eventoNome}.
                     </p>
                     <p className="text-zinc-500 text-xs mt-2">
-                        Aguarde a aprovação do admin.
+                        {isLoggedIn ? 'Lista aprovada automaticamente!' : 'Aguarde a aprovação do admin.'}
                     </p>
                 </div>
                 <button

@@ -24,6 +24,7 @@ export function PerfilForm({ perfil }: Props) {
     const [saveError, setSaveError] = useState<string | null>(null)
     const [saveSuccess, setSaveSuccess] = useState(false)
     const [pending, startTransition] = useTransition()
+    const [senhaAtual, setSenhaAtual] = useState('')
     const [novaSenha, setNovaSenha] = useState('')
     const [senhaError, setSenhaError] = useState<string | null>(null)
     const [senhaSuccess, setSenhaSuccess] = useState(false)
@@ -92,11 +93,12 @@ export function PerfilForm({ perfil }: Props) {
         setSenhaError(null)
         setSenhaSuccess(false)
         startTransitionSenha(async () => {
-            const result = await alterarMinhaSenha(novaSenha)
+            const result = await alterarMinhaSenha(senhaAtual, novaSenha)
             if (result.error) {
                 setSenhaError(result.error)
             } else {
                 setSenhaSuccess(true)
+                setSenhaAtual('')
                 setNovaSenha('')
                 setTimeout(() => setSenhaSuccess(false), 3000)
             }
@@ -152,6 +154,18 @@ export function PerfilForm({ perfil }: Props) {
                 <h2 className="text-sm font-semibold text-zinc-300 mb-4">Alterar Senha</h2>
                 <form onSubmit={handleAlterarSenha} className="space-y-4">
                     <div>
+                        <label className="block text-xs font-medium text-zinc-400 mb-1.5">Senha atual</label>
+                        <input
+                            type="password"
+                            value={senhaAtual}
+                            onChange={(e) => setSenhaAtual(e.target.value)}
+                            placeholder="Sua senha atual"
+                            minLength={6}
+                            required
+                            className="w-full px-3.5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[var(--cor-tema)] focus:border-transparent transition-all"
+                        />
+                    </div>
+                    <div>
                         <label className="block text-xs font-medium text-zinc-400 mb-1.5">Nova senha</label>
                         <input
                             type="password"
@@ -178,7 +192,7 @@ export function PerfilForm({ perfil }: Props) {
 
                     <button
                         type="submit"
-                        disabled={pendingSenha || novaSenha.length < 6}
+                        disabled={pendingSenha || senhaAtual.length < 6 || novaSenha.length < 6}
                         className="flex items-center gap-2 px-4 py-2.5 bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
                     >
                         {pendingSenha ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}

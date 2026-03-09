@@ -15,6 +15,7 @@ interface TopBarProps {
     boateNome?: string
     boateLogoUrl?: string | null
     userName?: string | null
+    userAvatarUrl?: string | null
     userRole?: 'Admin' | 'Portaria'
     boateId?: string
     submissoesPendentes?: number
@@ -53,6 +54,7 @@ export function TopBar({
     boateNome,
     boateLogoUrl,
     userName,
+    userAvatarUrl,
     userRole,
     boateId,
     submissoesPendentes = 0,
@@ -157,36 +159,32 @@ export function TopBar({
                                         </Link>
                                     )
                                 })}
-                                {enviarNomesHref && (
-                                    <Link
-                                        href={enviarNomesHref}
-                                        className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
-                                    >
-                                        <Send className="w-4 h-4 shrink-0 text-zinc-600" />
-                                        Enviar Nomes
-                                    </Link>
-                                )}
                             </div>
                         </details>
                     )}
 
-                    {/* Portaria: Enviar Nomes link inline */}
-                    {userRole === 'Portaria' && enviarNomesHref && (
-                        <Link
-                            href={enviarNomesHref}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
-                        >
-                            <Send className="w-4 h-4 shrink-0" />
-                            Enviar Nomes
-                        </Link>
-                    )}
                 </nav>
 
                 {/* Right: profile + logout */}
                 <div className="flex items-center gap-2 ml-auto">
+                    {/* Enviar Nomes — visível em desktop */}
+                    {enviarNomesHref && (
+                        <Link
+                            href={enviarNomesHref}
+                            title="Enviar lista de nomes"
+                            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+                        >
+                            <Send className="w-4 h-4 shrink-0" />
+                            <span className="hidden lg:inline">Enviar Nomes</span>
+                        </Link>
+                    )}
                     <Link href="/perfil" className="flex items-center gap-2" title="Meu perfil">
-                        <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center shrink-0">
-                            <span className="text-xs font-medium text-zinc-300">{initials}</span>
+                        <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
+                            {userAvatarUrl ? (
+                                <img src={userAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-xs font-medium text-zinc-300">{initials}</span>
+                            )}
                         </div>
                         {userRole && (
                             <span className="hidden lg:inline text-[10px] font-medium text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded">
@@ -275,8 +273,12 @@ export function TopBar({
                             onClick={() => setMobileOpen(false)}
                             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
                         >
-                            <div className="w-4 h-4 rounded-full bg-zinc-700 flex items-center justify-center shrink-0">
-                                <span className="text-[9px] font-medium text-zinc-300">{initials}</span>
+                            <div className="w-4 h-4 rounded-full bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
+                                {userAvatarUrl ? (
+                                    <img src={userAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-[9px] font-medium text-zinc-300">{initials}</span>
+                                )}
                             </div>
                             Meu perfil
                         </Link>

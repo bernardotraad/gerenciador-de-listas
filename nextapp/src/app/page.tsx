@@ -188,7 +188,13 @@ export default async function Home({ searchParams }: Props) {
                         <p className="text-zinc-600 text-sm mt-1">Volte mais tarde.</p>
                     </div>
                 ) : (
-                    <SubmitForm boateId={boateId} eventos={eventos} />
+                    <SubmitForm
+                                    boateId={boateId}
+                                    eventos={eventos}
+                                    initialNome={profile?.nome ?? undefined}
+                                    initialEmail={user?.email ?? undefined}
+                                    isLoggedIn={!!profile}
+                                />
                 )}
             </div>
 
@@ -214,7 +220,9 @@ export default async function Home({ searchParams }: Props) {
                     boateNome={boate.nome}
                     boateLogoUrl={boate.logo_url ?? null}
                     userName={profile.nome}
+                    userAvatarUrl={profile.avatar_url}
                     userRole={profile.role}
+                    boateId={boateId}
                 />
                 <main className="flex flex-col items-center justify-center px-4 pt-20 pb-12">
                     {formContent}

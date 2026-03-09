@@ -45,6 +45,7 @@ export default async function PortariaLayout({
                     boateNome={boate?.nome ?? undefined}
                     boateLogoUrl={boate?.logo_url ?? null}
                     userName={profile?.nome}
+                    userAvatarUrl={profile?.avatar_url ?? null}
                     userRole="Admin"
                     boateId={boate?.id ?? undefined}
                     submissoesPendentes={submissoesPendentes ?? 0}
@@ -65,6 +66,7 @@ export default async function PortariaLayout({
                 boateNome={boate?.nome ?? undefined}
                 boateLogoUrl={boate?.logo_url ?? null}
                 userName={profile?.nome}
+                userAvatarUrl={profile?.avatar_url ?? null}
                 userRole="Portaria"
                 boateId={boate?.id ?? undefined}
             />

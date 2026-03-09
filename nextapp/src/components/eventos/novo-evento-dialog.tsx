@@ -22,9 +22,10 @@ interface ListaTipoOpt {
 
 interface NovoEventoDialogProps {
     listaTipos: ListaTipoOpt[]
+    capacidadePadrao?: number
 }
 
-export function NovoEventoDialog({ listaTipos }: NovoEventoDialogProps) {
+export function NovoEventoDialog({ listaTipos, capacidadePadrao }: NovoEventoDialogProps) {
     const [open, setOpen] = useState(false)
     const [serverError, setServerError] = useState<string | null>(null)
     const [pending, startTransition] = useTransition()
@@ -38,10 +39,10 @@ export function NovoEventoDialog({ listaTipos }: NovoEventoDialogProps) {
     } = useForm<CriarEventoInput>({
         resolver: zodResolver(criarEventoSchema),
         defaultValues: {
-            hora_inicio: '22:00',
+            hora_inicio: '21:00',
             hora_fim: '04:00',
-            hora_vip_limite: '23:00',
-            capacidade: 100,
+            hora_vip_limite: '00:00',
+            capacidade: capacidadePadrao ?? 100,
             lista_tipo_ids: [],
             semanas: 8,
             data_referencia: format(new Date(), 'yyyy-MM-dd'),
