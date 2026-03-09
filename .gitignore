@@ -44,3 +44,5 @@ coverage/
 .worktrees/
 /.claude
 /nextapp/.claude
+.vercel
+.env*.local
