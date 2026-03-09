@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd nextapp && pnpm install --frozen-lockfile && pnpm build",
+  "outputDirectory": "nextapp/.next",
+  "devCommand": "cd nextapp && pnpm dev",
+  "installCommand": "echo 'skip root install'",
+  "framework": "nextjs"
+}
