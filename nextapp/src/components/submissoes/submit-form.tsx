@@ -210,6 +210,16 @@ export function SubmitForm({ boateId, eventos, initialNome, initialEmail, isLogg
                     className={`${inputCls} resize-none font-mono`}
                 />
                 <p className="text-zinc-600 text-xs mt-1">Um nome por linha.</p>
+                {nomes.names.length > 0 && (
+                    <div className="mt-2 p-3 bg-zinc-800/60 border border-zinc-700 rounded-lg space-y-1 max-h-36 overflow-y-auto">
+                        {nomes.names.map((nome, i) => (
+                            <p key={i} className="text-xs text-zinc-300 flex items-center gap-2">
+                                <span className="text-zinc-600 w-5 text-right shrink-0">{i + 1}.</span>
+                                {nome}
+                            </p>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {error && (

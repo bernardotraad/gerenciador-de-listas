@@ -83,7 +83,7 @@ export function GuestRow({
 
     return (
         <div
-            className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-colors ${rowBg}`}
+            className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all duration-300 ${rowBg} ${feedback?.tipo === 'sucesso' ? 'scale-[1.01]' : 'scale-100'}`}
         >
             <div className="flex items-center gap-3 min-w-0">
                 <div

@@ -99,7 +99,7 @@ export default async function PortariaPage({ searchParams }: Props) {
     const presentes = guests.filter((g) => !!checkinMap[g.id])
 
     return (
-        <div className="space-y-6 max-w-2xl mx-auto">
+        <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
@@ -127,7 +127,7 @@ export default async function PortariaPage({ searchParams }: Props) {
 
             {!eventoAtivo ? (
                 <div className="flex flex-col items-center justify-center gap-4 py-24 border border-dashed border-zinc-800 rounded-2xl text-center">
-                    <DoorOpen className="w-10 h-10 text-zinc-600" />
+                    <DoorOpen className="w-12 h-12 text-zinc-600" />
                     <div>
                         <p className="text-zinc-300 font-medium">Nenhum evento ativo</p>
                         <p className="text-zinc-500 text-sm mt-1">Não há eventos agendados para hoje ou próximos dias.</p>
@@ -171,6 +171,27 @@ export default async function PortariaPage({ searchParams }: Props) {
                             <p className="text-xs text-zinc-500 mt-1">Capacidade</p>
                         </div>
                     </div>
+
+                    {/* Barra de progresso de ocupação */}
+                    {eventoAtivo.capacidade > 0 && (
+                        <div className="space-y-1">
+                            <div className="w-full bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                                <div
+                                    className={`h-full rounded-full transition-all duration-500 ${
+                                        totalPresentes / eventoAtivo.capacidade >= 0.9
+                                            ? 'bg-red-500'
+                                            : totalPresentes / eventoAtivo.capacidade >= 0.7
+                                            ? 'bg-amber-500'
+                                            : 'bg-emerald-500'
+                                    }`}
+                                    style={{ width: `${Math.min(100, (totalPresentes / eventoAtivo.capacidade) * 100)}%` }}
+                                />
+                            </div>
+                            <p className="text-xs text-zinc-600 text-right">
+                                {Math.round((totalPresentes / eventoAtivo.capacidade) * 100)}% da capacidade
+                            </p>
+                        </div>
+                    )}
 
                     {/* Busca */}
                     <GuestSearch eventoId={eventoAtivo.id} defaultValue={q ?? ''} />

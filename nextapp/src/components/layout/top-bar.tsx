@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
     LogOut, Users, LayoutDashboard, Calendar, Inbox,
     DoorOpen, Tag, History, Settings, Send, Menu, X, ChevronDown
@@ -62,6 +62,19 @@ export function TopBar({
     const pathname = usePathname()
     const router = useRouter()
     const [mobileOpen, setMobileOpen] = useState(false)
+    const [maisOpen, setMaisOpen] = useState(false)
+    const maisRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (!maisOpen) return
+        function handleClick(e: MouseEvent) {
+            if (maisRef.current && !maisRef.current.contains(e.target as Node)) {
+                setMaisOpen(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClick)
+        return () => document.removeEventListener('mousedown', handleClick)
+    }, [maisOpen])
 
     async function handleLogout() {
         const supabase = createClient()
@@ -137,31 +150,38 @@ export function TopBar({
 
                     {/* "Mais" dropdown for secondary items (Admin only) */}
                     {secondaryItems.length > 0 && (
-                        <details className="relative group/details">
-                            <summary className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer list-none select-none">
+                        <div className="relative" ref={maisRef}>
+                            <button
+                                type="button"
+                                onClick={() => setMaisOpen((v) => !v)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer select-none"
+                            >
                                 Mais
-                                <ChevronDown className="w-3.5 h-3.5 transition-transform group-open/details:rotate-180" />
-                            </summary>
-                            <div className="absolute top-full left-0 mt-1 w-52 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl py-1 z-10">
-                                {secondaryItems.map((item) => {
-                                    const active = isActive(pathname, item.href)
-                                    return (
-                                        <Link
-                                            key={item.href}
-                                            href={item.href}
-                                            className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-zinc-800"
-                                            style={active ? { color: 'var(--cor-tema)' } : { color: '#a1a1aa' }}
-                                        >
-                                            <item.icon
-                                                className="w-4 h-4 shrink-0"
-                                                style={active ? { color: 'var(--cor-tema)' } : { color: '#71717a' }}
-                                            />
-                                            {item.label}
-                                        </Link>
-                                    )
-                                })}
-                            </div>
-                        </details>
+                                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${maisOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            {maisOpen && (
+                                <div className="absolute top-full left-0 mt-1 w-52 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl py-1 z-10">
+                                    {secondaryItems.map((item) => {
+                                        const active = isActive(pathname, item.href)
+                                        return (
+                                            <Link
+                                                key={item.href}
+                                                href={item.href}
+                                                onClick={() => setMaisOpen(false)}
+                                                className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-zinc-800"
+                                                style={active ? { color: 'var(--cor-tema)' } : { color: '#a1a1aa' }}
+                                            >
+                                                <item.icon
+                                                    className="w-4 h-4 shrink-0"
+                                                    style={active ? { color: 'var(--cor-tema)' } : { color: '#71717a' }}
+                                                />
+                                                {item.label}
+                                            </Link>
+                                        )
+                                    })}
+                                </div>
+                            )}
+                        </div>
                     )}
 
                 </nav>
@@ -173,14 +193,14 @@ export function TopBar({
                         <Link
                             href={enviarNomesHref}
                             title="Enviar lista de nomes"
-                            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+                            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
                         >
                             <Send className="w-4 h-4 shrink-0" />
                             <span className="hidden lg:inline">Enviar Nomes</span>
                         </Link>
                     )}
                     <Link href="/perfil" className="flex items-center gap-2" title="Meu perfil">
-                        <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
+                        <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-zinc-700 hover:ring-[var(--cor-tema)] transition-all">
                             {userAvatarUrl ? (
                                 <img src={userAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                             ) : (

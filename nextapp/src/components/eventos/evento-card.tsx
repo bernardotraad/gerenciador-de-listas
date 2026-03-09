@@ -43,7 +43,11 @@ export function EventoCard(props: EventoCardProps) {
     const cancelado = props.status === 'Cancelado'
 
     return (
-        <div className={`bg-zinc-900 border rounded-xl p-5 flex flex-col gap-4 transition-opacity ${cancelado ? 'border-zinc-800 opacity-60' : 'border-zinc-800 hover:border-zinc-700'}`}>
+        <div className={`bg-zinc-900 border rounded-xl p-5 flex flex-col gap-4 transition-all duration-200 ${
+            cancelado || props.status === 'Finalizado'
+                ? 'border-zinc-800 opacity-60'
+                : 'border-zinc-800 hover:border-zinc-600 hover:shadow-lg hover:shadow-black/20'
+        }`}>
             {/* Header */}
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
