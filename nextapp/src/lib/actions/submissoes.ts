@@ -128,7 +128,7 @@ export async function criarSubmissaoLogada(input: SubmissaoInput) {
             raw_text: data.raw_text,
             parsed_names: parseResult.names,
             status: 'Aprovado',
-            submission_ip: 'internal',
+            submission_ip: null,
             approved_by: user.id,
             approved_at: new Date().toISOString(),
         })
