@@ -9,7 +9,7 @@ interface Kpis {
 
 const cards = [
     { key: 'eventosAtivos', label: 'Eventos Ativos', Icon: Calendar, color: '', bg: '' },
-    { key: 'convidadosAprovados', label: 'Convidados Aprovados', Icon: Users, color: 'text-indigo-400', bg: 'bg-indigo-600/10' },
+    { key: 'convidadosAprovados', label: 'Convidados Aprovados', Icon: Users, color: '[color:var(--cor-tema)]', bg: '[background-color:var(--cor-tema-subtle)]' },
     { key: 'submissoesPendentes', label: 'Submissões Pendentes', Icon: Clock, color: 'text-amber-400', bg: 'bg-amber-600/10' },
     { key: 'checkinsHoje', label: 'Check-ins Hoje', Icon: CheckCircle, color: 'text-emerald-400', bg: 'bg-emerald-600/10' },
 ] as const

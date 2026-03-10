@@ -35,7 +35,7 @@ export default async function AdminLayout({
 
     return (
         <div
-            className="min-h-screen bg-zinc-950"
+            className="min-h-screen [background-color:var(--cor-tema-fundo)]"
             style={{ '--cor-tema': corTema } as React.CSSProperties}
         >
             <TopBar

@@ -51,6 +51,9 @@
   --cor-tema: #7c3aed;
   --cor-tema-hover: color-mix(in oklch, var(--cor-tema) 85%, black);
   --cor-tema-subtle: color-mix(in oklch, var(--cor-tema) 15%, transparent);
+  --cor-tema-fundo:  color-mix(in oklch, var(--cor-tema) 6%,  oklch(0.065 0 0));
+  --cor-tema-card:   color-mix(in oklch, var(--cor-tema) 9%,  oklch(0.12  0 0));
+  --cor-tema-borda:  color-mix(in oklch, var(--cor-tema) 14%, oklch(0.22  0 0));
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

@@ -96,7 +96,7 @@ export function TopBar({
 
     return (
         <>
-            <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-zinc-900 border-b border-zinc-800">
+            <header className="fixed top-0 left-0 right-0 z-50 h-14 [background-color:var(--cor-tema-card)] [border-color:var(--cor-tema-borda)] border-b">
                 <div className="max-w-7xl mx-auto h-full flex items-center px-4 sm:px-6 lg:px-8 gap-4">
                 {/* Logo */}
                 <Link href={homeHref} className="flex items-center gap-2.5 shrink-0 group">
