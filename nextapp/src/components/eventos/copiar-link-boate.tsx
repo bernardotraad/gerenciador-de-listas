@@ -21,7 +21,7 @@ export function CopiarLinkBoate({ boateId }: CopiarLinkBoateProps) {
     return (
         <button
             onClick={handleCopy}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-zinc-400 hover:text-[var(--cor-tema)] border border-zinc-700 hover:border-[var(--cor-tema)] rounded-lg transition-all"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-primary border border-border hover:border-primary/50 rounded-lg transition-all"
         >
             {copied
                 ? <><Check className="w-4 h-4 text-emerald-400" /><span className="text-emerald-400 text-sm">Copiado!</span></>

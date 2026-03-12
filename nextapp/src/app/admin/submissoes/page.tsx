@@ -35,19 +35,19 @@ export default async function SubmissoesPage() {
         <div className="space-y-8">
             {/* Header */}
             <div>
-                <h1 className="text-2xl font-bold text-zinc-50">Submissões</h1>
-                <p className="text-zinc-400 text-sm mt-1">{total} total</p>
+                <h1 className="text-2xl font-bold text-foreground">Submissões</h1>
+                <p className="text-muted-foreground text-sm mt-1">{total} total</p>
             </div>
 
             {/* Lista */}
             {total === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-4 py-24 border border-dashed border-zinc-800 rounded-2xl text-center">
-                    <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center">
-                        <InboxIcon className="w-6 h-6 text-zinc-500" />
+                <div className="flex flex-col items-center justify-center gap-4 py-24 border border-dashed border-border rounded-2xl text-center">
+                    <div className="w-12 h-12 rounded-xl bg-muted/50 flex items-center justify-center">
+                        <InboxIcon className="w-6 h-6 text-muted-foreground/50" />
                     </div>
                     <div>
-                        <p className="text-zinc-300 font-medium">Nenhuma submissão ainda</p>
-                        <p className="text-zinc-500 text-sm mt-1">
+                        <p className="text-foreground font-medium">Nenhuma submissão ainda</p>
+                        <p className="text-muted-foreground text-sm mt-1">
                             Compartilhe o link de submissão para receber listas.
                         </p>
                     </div>

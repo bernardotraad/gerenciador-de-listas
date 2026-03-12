@@ -12,12 +12,12 @@ export default async function UsuariosPage() {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--cor-tema-subtle)' }}>
-                    <UsersRound className="w-5 h-5" style={{ color: 'var(--cor-tema)' }} />
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-primary/20">
+                    <UsersRound className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-zinc-50">Usuários</h1>
-                    <p className="text-zinc-400 text-sm mt-0.5">
+                    <h1 className="text-2xl font-bold text-foreground">Usuários</h1>
+                    <p className="text-muted-foreground text-sm mt-0.5">
                         Gerencie os usuários com acesso ao sistema
                     </p>
                 </div>

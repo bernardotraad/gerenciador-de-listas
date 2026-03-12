@@ -8,7 +8,7 @@ import { Upload, Loader2, UserCircle, Save, KeyRound } from 'lucide-react'
 const ROLE_BADGE: Record<string, string> = {
     Admin: 'bg-violet-500/15 text-violet-400 border-violet-500/30',
     Portaria: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
-    Viewer: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
+    Viewer: 'bg-muted/50 text-muted-foreground border-border',
 }
 
 interface Props {
@@ -108,10 +108,10 @@ export function PerfilForm({ perfil }: Props) {
     return (
         <div className="space-y-6 max-w-lg">
             {/* Avatar */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4">
-                <h2 className="text-sm font-semibold text-zinc-300">Foto de Perfil</h2>
+            <div className="glass-card border-white/5 rounded-xl p-5 space-y-4">
+                <h2 className="text-sm font-semibold text-foreground">Foto de Perfil</h2>
                 <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full border border-zinc-700 bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+                    <div className="w-16 h-16 rounded-full border border-border bg-muted/50 flex items-center justify-center overflow-hidden shrink-0">
                         {avatarPreview ? (
                             <img
                                 src={avatarPreview}
@@ -119,7 +119,7 @@ export function PerfilForm({ perfil }: Props) {
                                 className="w-full h-full object-cover"
                             />
                         ) : (
-                            <UserCircle className="w-10 h-10 text-zinc-600" />
+                            <UserCircle className="w-10 h-10 text-muted-foreground" />
                         )}
                     </div>
                     <div className="space-y-1.5">
@@ -127,12 +127,12 @@ export function PerfilForm({ perfil }: Props) {
                             type="button"
                             onClick={() => inputRef.current?.click()}
                             disabled={uploading}
-                            className="flex items-center gap-2 px-3.5 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-2 px-3.5 py-2 glass-card hover:bg-muted/50 border border-white/5 text-foreground text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                             {uploading ? 'Enviando...' : 'Alterar foto'}
                         </button>
-                        <p className="text-xs text-zinc-600">PNG, JPG ou WebP · máx. 2MB</p>
+                        <p className="text-xs text-muted-foreground">PNG, JPG ou WebP · máx. 2MB</p>
                     </div>
                 </div>
                 {uploadError && (
@@ -150,11 +150,11 @@ export function PerfilForm({ perfil }: Props) {
             </div>
 
             {/* Alterar senha */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                <h2 className="text-sm font-semibold text-zinc-300 mb-4">Alterar Senha</h2>
+            <div className="glass-card border-white/5 rounded-xl p-5">
+                <h2 className="text-sm font-semibold text-foreground mb-4">Alterar Senha</h2>
                 <form onSubmit={handleAlterarSenha} className="space-y-4">
                     <div>
-                        <label className="block text-xs font-medium text-zinc-400 mb-1.5">Senha atual</label>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1.5">Senha atual</label>
                         <input
                             type="password"
                             value={senhaAtual}
@@ -162,11 +162,11 @@ export function PerfilForm({ perfil }: Props) {
                             placeholder="Sua senha atual"
                             minLength={6}
                             required
-                            className="w-full px-3.5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[var(--cor-tema)] focus:border-transparent transition-all"
+                            className="w-full px-3.5 py-2.5 bg-muted/50 border border-border rounded-lg text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-zinc-400 mb-1.5">Nova senha</label>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1.5">Nova senha</label>
                         <input
                             type="password"
                             value={novaSenha}
@@ -174,7 +174,7 @@ export function PerfilForm({ perfil }: Props) {
                             placeholder="Mínimo 6 caracteres"
                             minLength={6}
                             required
-                            className="w-full px-3.5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[var(--cor-tema)] focus:border-transparent transition-all"
+                            className="w-full px-3.5 py-2.5 bg-muted/50 border border-border rounded-lg text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                         />
                     </div>
 
@@ -193,7 +193,7 @@ export function PerfilForm({ perfil }: Props) {
                     <button
                         type="submit"
                         disabled={pendingSenha || senhaAtual.length < 6 || novaSenha.length < 6}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-muted/50 hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed text-foreground text-sm font-semibold rounded-lg transition-colors border border-border"
                     >
                         {pendingSenha ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
                         Alterar senha
@@ -202,11 +202,11 @@ export function PerfilForm({ perfil }: Props) {
             </div>
 
             {/* Dados pessoais */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                <h2 className="text-sm font-semibold text-zinc-300 mb-4">Dados Pessoais</h2>
+            <div className="glass-card border-white/5 rounded-xl p-5">
+                <h2 className="text-sm font-semibold text-foreground mb-4">Dados Pessoais</h2>
                 <form onSubmit={handleSalvar} className="space-y-4">
                     <div>
-                        <label className="block text-xs font-medium text-zinc-400 mb-1.5">Nome</label>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1.5">Nome</label>
                         <input
                             type="text"
                             value={nome}
@@ -214,22 +214,22 @@ export function PerfilForm({ perfil }: Props) {
                             minLength={2}
                             maxLength={100}
                             required
-                            className="w-full px-3.5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[var(--cor-tema)] focus:border-transparent transition-all"
+                            className="w-full px-3.5 py-2.5 bg-muted/50 border border-border rounded-lg text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-zinc-400 mb-1.5">Email</label>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1.5">Email</label>
                         <input
                             type="email"
                             value={perfil.email}
                             readOnly
-                            className="w-full px-3.5 py-2.5 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-zinc-500 text-sm cursor-not-allowed"
+                            className="w-full px-3.5 py-2.5 bg-muted/30 border border-border/50 rounded-lg text-muted-foreground text-sm cursor-not-allowed"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-medium text-zinc-400 mb-1.5">Função</label>
+                        <label className="block text-xs font-medium text-muted-foreground mb-1.5">Função</label>
                         <div>
                             <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${ROLE_BADGE[perfil.role] ?? ROLE_BADGE.Viewer}`}>
                                 {perfil.role}
@@ -252,7 +252,7 @@ export function PerfilForm({ perfil }: Props) {
                     <button
                         type="submit"
                         disabled={pending || nome.trim().length < 2}
-                        className="flex items-center gap-2 px-4 py-2.5 [background-color:var(--cor-tema)] hover:[background-color:var(--cor-tema-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground text-sm font-semibold rounded-lg transition-colors"
                     >
                         {pending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                         Salvar alterações

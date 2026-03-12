@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { parseNomes } from '@/lib/schemas/submissoes'
 import { criarSubmissao, criarSubmissaoLogada } from '@/lib/actions/submissoes'
 import { CheckCircle, Loader2 } from 'lucide-react'
+import { ScaleIn, FadeIn } from '@/components/ui/motion'
 
 interface ListaTipo {
     id: string
@@ -75,166 +76,188 @@ export function SubmitForm({ boateId, eventos, initialNome, initialEmail, isLogg
 
     if (success !== null) {
         return (
-            <div className="flex flex-col items-center gap-4 py-10 text-center">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
-                    <CheckCircle className="w-7 h-7 text-emerald-400" />
+            <ScaleIn delay={0.1} className="flex flex-col items-center gap-4 py-8 text-center max-w-sm mx-auto">
+                <div className="w-16 h-16 rounded-3xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shadow-lg shadow-emerald-500/10">
+                    <CheckCircle className="w-8 h-8 text-emerald-400" />
                 </div>
                 <div>
-                    <p className="text-lg font-semibold text-zinc-100">Lista enviada!</p>
-                    <p className="text-zinc-400 text-sm mt-1">
-                        {success.count} nome{success.count !== 1 ? 's' : ''} submetido{success.count !== 1 ? 's' : ''} para {success.eventoNome}.
+                    <h3 className="text-xl font-bold text-foreground mb-1 tracking-tight">Lista enviada com sucesso!</h3>
+                    <p className="text-muted-foreground text-sm">
+                        {success.count} {success.count !== 1 ? 'convidados submetidos' : 'convidado submetido'} para {success.eventoNome}.
                     </p>
-                    <p className="text-zinc-500 text-xs mt-2">
-                        {isLoggedIn ? 'Lista aprovada automaticamente!' : 'Aguarde a aprovação do admin.'}
-                    </p>
+                    <div className="mt-4 inline-flex items-center justify-center px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
+                        {isLoggedIn ? 'Lista aprovada automaticamente' : 'Aguardando aprovação da portaria'}
+                    </div>
                 </div>
                 <button
                     onClick={() => setSuccess(null)}
-                    className="text-sm hover:opacity-80 transition-opacity mt-2"
-                    style={{ color: 'var(--cor-tema)' }}
+                    className="mt-4 px-6 py-2.5 bg-primary/20 hover:bg-primary/30 text-primary hover:text-primary transition-all rounded-xl text-sm font-semibold border border-primary/20 cursor-pointer"
                 >
-                    Enviar outra lista
+                    Enviar nova lista
                 </button>
-            </div>
+            </ScaleIn>
         )
     }
 
-    const inputCls = "w-full px-3.5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[var(--cor-tema)] focus:border-transparent transition-all"
-    const labelCls = "block text-xs font-medium text-zinc-400 mb-1.5"
+    const inputCls = "w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-foreground text-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all hover:bg-black/30"
+    const labelCls = "block text-sm font-medium text-foreground/80 mb-2"
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Evento */}
-            <div>
-                <label className={labelCls}>Evento</label>
-                <select
-                    value={eventoId}
-                    onChange={(e) => handleEventoChange(e.target.value)}
-                    className={inputCls}
-                >
-                    {eventos.map((evt) => (
-                        <option key={evt.id} value={evt.id}>
-                            {evt.nome} — {new Date(evt.data_efetiva + 'T12:00:00').toLocaleDateString('pt-BR', {
-                                day: '2-digit', month: '2-digit'
-                            })}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Tipo de lista */}
-            {listaTiposDisponiveis.length > 0 && (
-                <div>
-                    <label className={labelCls}>Tipo de lista</label>
-                    {listaTiposDisponiveis.length === 1 ? (
-                        <div className="px-3.5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-300 text-sm">
-                            {listaTiposDisponiveis[0]!.nome}
-                        </div>
-                    ) : (
-                        <div className="flex flex-wrap gap-2">
-                            {listaTiposDisponiveis.map((tipo) => (
-                                <button
-                                    key={tipo.id}
-                                    type="button"
-                                    onClick={() => setListaTipoId(tipo.id)}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${
-                                        listaTipoId === tipo.id
-                                            ? 'text-white'
-                                            : 'bg-zinc-800 text-zinc-400 border-zinc-700 hover:border-zinc-600'
-                                    }`}
-                                    style={listaTipoId === tipo.id ? { backgroundColor: 'var(--cor-tema-subtle)', color: 'var(--cor-tema)', borderColor: 'var(--cor-tema)' } : undefined}
-                                >
-                                    {tipo.nome}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Info do evento selecionado */}
-            {eventoSelecionado && (
-                <div className="bg-zinc-800/60 border border-zinc-700 rounded-xl px-4 py-3 text-sm">
-                    <p className="font-semibold text-zinc-100">{eventoSelecionado.nome}</p>
-                    <p className="text-zinc-400 text-xs mt-0.5">
-                        {new Date(eventoSelecionado.data_efetiva + 'T12:00:00').toLocaleDateString('pt-BR', {
-                            weekday: 'long', day: '2-digit', month: 'long'
-                        })} · {eventoSelecionado.hora_inicio.slice(0, 5)} às {eventoSelecionado.hora_fim.slice(0, 5)}
-                    </p>
-                </div>
-            )}
-
-            {/* Seu nome */}
-            <div>
-                <label className={labelCls}>Seu nome</label>
-                <input
-                    type="text"
-                    value={submitterLabel}
-                    onChange={(e) => setSubmitterLabel(e.target.value)}
-                    placeholder="Ex: DJ Fulano"
-                    maxLength={80}
-                    minLength={2}
-                    required
-                    className={inputCls}
-                />
-            </div>
-
-            {/* Seu e-mail */}
-            <div>
-                <label className={labelCls}>Seu e-mail</label>
-                <input
-                    type="email"
-                    value={submitterEmail}
-                    onChange={(e) => setSubmitterEmail(e.target.value)}
-                    placeholder="Ex: dj@email.com"
-                    maxLength={120}
-                    required
-                    className={inputCls}
-                />
-            </div>
-
-            {/* Lista de nomes */}
-            <div>
-                <label className={labelCls}>
-                    Lista de convidados{' '}
-                    {nomes.names.length > 0 && (
-                        <span style={{ color: 'var(--cor-tema)' }}>{nomes.names.length} nome{nomes.names.length !== 1 ? 's' : ''}</span>
-                    )}
-                </label>
-                <textarea
-                    value={rawText}
-                    onChange={(e) => setRawText(e.target.value)}
-                    placeholder={"João Silva\nMaria Santos\nCarlos Oliveira"}
-                    rows={8}
-                    required
-                    className={`${inputCls} resize-none font-mono`}
-                />
-                <p className="text-zinc-600 text-xs mt-1">Um nome por linha.</p>
-                {nomes.names.length > 0 && (
-                    <div className="mt-2 p-3 bg-zinc-800/60 border border-zinc-700 rounded-lg space-y-1 max-h-36 overflow-y-auto">
-                        {nomes.names.map((nome, i) => (
-                            <p key={i} className="text-xs text-zinc-300 flex items-center gap-2">
-                                <span className="text-zinc-600 w-5 text-right shrink-0">{i + 1}.</span>
-                                {nome}
-                            </p>
+        <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {/* Evento */}
+                <div className="space-y-1">
+                    <label className={labelCls}>Evento</label>
+                    <select
+                        value={eventoId}
+                        onChange={(e) => handleEventoChange(e.target.value)}
+                        className={inputCls}
+                    >
+                        {eventos.map((evt) => (
+                            <option key={evt.id} value={evt.id} className="bg-background text-foreground">
+                                {evt.nome} — {new Date(evt.data_efetiva + 'T12:00:00').toLocaleDateString('pt-BR', {
+                                    day: '2-digit', month: '2-digit'
+                                })}
+                            </option>
                         ))}
+                    </select>
+                </div>
+
+                {/* Tipo de lista */}
+                {listaTiposDisponiveis.length > 0 && (
+                    <div className="space-y-1">
+                        <label className={labelCls}>Tipo de lista</label>
+                        {listaTiposDisponiveis.length === 1 ? (
+                            <div className="px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-muted-foreground text-sm">
+                                {listaTiposDisponiveis[0]!.nome}
+                            </div>
+                        ) : (
+                            <div className="flex flex-wrap gap-2 pt-1">
+                                {listaTiposDisponiveis.map((tipo) => (
+                                    <button
+                                        key={tipo.id}
+                                        type="button"
+                                        onClick={() => setListaTipoId(tipo.id)}
+                                        className={`px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
+                                            listaTipoId === tipo.id
+                                                ? 'bg-primary/20 text-primary border-primary/40 shadow-sm shadow-primary/10'
+                                                : 'bg-black/20 text-muted-foreground border-white/10 hover:border-white/20 hover:text-foreground'
+                                        }`}
+                                    >
+                                        {tipo.nome}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
 
-            {error && (
-                <div className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg px-3.5 py-2.5">
-                    {error}
+            {/* Info do evento selecionado */}
+            {eventoSelecionado && (
+                <FadeIn delay={0.1}>
+                    <div className="bg-primary/5 border border-primary/10 rounded-xl px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="space-y-0.5">
+                            <p className="font-semibold text-foreground tracking-tight">{eventoSelecionado.nome}</p>
+                            <p className="text-primary text-xs font-medium">
+                                {new Date(eventoSelecionado.data_efetiva + 'T12:00:00').toLocaleDateString('pt-BR', {
+                                    weekday: 'long', day: '2-digit', month: 'long'
+                                })}
+                            </p>
+                        </div>
+                        <div className="inline-flex items-center px-3 py-1 rounded-lg bg-black/20 border border-white/5 text-xs text-muted-foreground whitespace-nowrap">
+                            {eventoSelecionado.hora_inicio.slice(0, 5)} — {eventoSelecionado.hora_fim.slice(0, 5)}
+                        </div>
+                    </div>
+                </FadeIn>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {/* Seu nome */}
+                <div className="space-y-1">
+                    <label className={labelCls}>Seu nome</label>
+                    <input
+                        type="text"
+                        value={submitterLabel}
+                        onChange={(e) => setSubmitterLabel(e.target.value)}
+                        placeholder="Ex: Gabriel Freitas"
+                        maxLength={80}
+                        minLength={2}
+                        required
+                        className={inputCls}
+                    />
                 </div>
+
+                {/* Seu e-mail */}
+                <div className="space-y-1">
+                    <label className={labelCls}>Seu e-mail</label>
+                    <input
+                        type="email"
+                        value={submitterEmail}
+                        onChange={(e) => setSubmitterEmail(e.target.value)}
+                        placeholder="Ex: email@exemplo.com"
+                        maxLength={120}
+                        required
+                        className={inputCls}
+                    />
+                </div>
+            </div>
+
+            {/* Lista de nomes */}
+            <div className="space-y-1">
+                <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-foreground/80">Listagem de Convidados</label>
+                    {nomes.names.length > 0 && (
+                        <FadeIn>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/20">
+                                {nomes.names.length} nomes encontrados
+                            </span>
+                        </FadeIn>
+                    )}
+                </div>
+                
+                <textarea
+                    value={rawText}
+                    onChange={(e) => setRawText(e.target.value)}
+                    placeholder={"João Silva\nMaria Santos\nCarlos Oliveira..."}
+                    rows={7}
+                    required
+                    className={`${inputCls} resize-none font-mono leading-relaxed`}
+                />
+                <p className="text-muted-foreground text-xs mt-2 pl-1">Por favor, insira um nome completo por linha.</p>
+                
+                {nomes.names.length > 0 && (
+                    <FadeIn delay={0.1}>
+                        <div className="mt-4 p-4 bg-black/20 border border-white/10 rounded-xl space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar">
+                            {nomes.names.map((nome, i) => (
+                                <p key={i} className="text-sm text-foreground/90 flex items-center gap-3">
+                                    <span className="text-muted-foreground w-6 text-right shrink-0 font-mono text-xs">{i + 1}.</span>
+                                    {nome}
+                                </p>
+                            ))}
+                        </div>
+                    </FadeIn>
+                )}
+            </div>
+
+            {error && (
+                <ScaleIn delay={0.1}>
+                    <div className="text-destructive text-sm bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3 flex items-start gap-2">
+                        <svg className="w-5 h-5 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
+                        </svg>
+                        <span className="flex-1">{error}</span>
+                    </div>
+                </ScaleIn>
             )}
 
             <button
                 type="submit"
                 disabled={pending || nomes.names.length === 0 || !listaTipoId || submitterLabel.trim().length < 2 || submitterEmail.trim() === ''}
-                className="w-full py-2.5 px-4 [background-color:var(--cor-tema)] hover:[background-color:var(--cor-tema-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg text-sm transition-all flex items-center justify-center gap-2"
+                className="w-full py-3.5 px-4 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-semibold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 mt-2"
             >
                 {pending && <Loader2 className="w-4 h-4 animate-spin" />}
-                {pending ? 'Enviando...' : `Enviar lista${nomes.names.length > 0 ? ` (${nomes.names.length})` : ''}`}
+                {pending ? 'Processando Lista...' : `Confirmar Lista (${nomes.names.length} nomes)`}
             </button>
         </form>
     )

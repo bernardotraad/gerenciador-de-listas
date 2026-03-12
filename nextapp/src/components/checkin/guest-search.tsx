@@ -34,13 +34,13 @@ export function GuestSearch({ eventoId, defaultValue = '' }: GuestSearchProps) {
 
     return (
         <form onSubmit={handleSubmit} className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             <input
                 value={value}
                 onChange={handleChange}
                 placeholder="Buscar convidado pelo nome..."
                 autoFocus
-                className="w-full pl-10 pr-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-zinc-100 text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[var(--cor-tema)] focus:border-transparent transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-muted/50 border border-border rounded-xl text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
             />
         </form>
     )

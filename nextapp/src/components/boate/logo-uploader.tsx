@@ -61,11 +61,11 @@ export function LogoUploader({ boateId, currentLogoUrl }: Props) {
 
     return (
         <div className="space-y-3">
-            <label className="text-xs font-medium text-zinc-400">Logo da Boate</label>
+            <label className="text-xs font-medium text-muted-foreground">Logo da Boate</label>
 
             <div className="flex items-center gap-4">
                 {/* Preview */}
-                <div className="w-16 h-16 rounded-xl border border-zinc-700 bg-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+                <div className="w-16 h-16 rounded-xl border border-border bg-muted/50 flex items-center justify-center overflow-hidden shrink-0">
                     {preview ? (
                         <img
                             src={preview}
@@ -73,7 +73,7 @@ export function LogoUploader({ boateId, currentLogoUrl }: Props) {
                             className="w-full h-full object-contain"
                         />
                     ) : (
-                        <ImageIcon className="w-6 h-6 text-zinc-600" />
+                        <ImageIcon className="w-6 h-6 text-muted-foreground" />
                     )}
                 </div>
 
@@ -83,7 +83,7 @@ export function LogoUploader({ boateId, currentLogoUrl }: Props) {
                         type="button"
                         onClick={() => inputRef.current?.click()}
                         disabled={uploading}
-                        className="flex items-center gap-2 px-3.5 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 px-3.5 py-2 glass-card hover:bg-muted/50 border border-white/5 text-foreground text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {uploading
                             ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -91,7 +91,7 @@ export function LogoUploader({ boateId, currentLogoUrl }: Props) {
                         }
                         {uploading ? 'Enviando...' : 'Alterar logo'}
                     </button>
-                    <p className="text-xs text-zinc-600">PNG, JPG ou WebP · máx. 2MB</p>
+                    <p className="text-xs text-muted-foreground">PNG, JPG ou WebP · máx. 2MB</p>
                 </div>
             </div>
 

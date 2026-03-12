@@ -24,14 +24,14 @@ const GUEST_STATUS_BADGE: Record<GuestStatus, string> = {
 const STATUS_BADGE: Record<EventoStatus, string> = {
     Ativo: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
     Cancelado: 'bg-red-500/15 text-red-400 border-red-500/30',
-    Finalizado: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
+    Finalizado: 'bg-muted/50 text-muted-foreground border-border',
 }
 
 const SUB_STATUS_BADGE: Record<SubStatus, string> = {
     Pendente: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
     Aprovado: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
     Rejeitado: 'bg-red-500/15 text-red-400 border-red-500/30',
-    Rascunho: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
+    Rascunho: 'bg-muted/50 text-muted-foreground border-border',
 }
 
 function StatCard({
@@ -48,13 +48,13 @@ function StatCard({
     color: string
 }) {
     return (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-3">
+        <div className="glass-card border-white/5 rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between">
-                <p className="text-xs text-zinc-500">{label}</p>
+                <p className="text-xs text-muted-foreground">{label}</p>
                 <span className={color}>{icon}</span>
             </div>
-            <p className="text-2xl font-bold text-zinc-50">{value}</p>
-            <p className="text-xs text-zinc-600">{sub}</p>
+            <p className="text-2xl font-bold text-foreground">{value}</p>
+            <p className="text-xs text-muted-foreground">{sub}</p>
         </div>
     )
 }
@@ -195,17 +195,17 @@ export default async function EventoOverviewPage({
             <div className="space-y-3">
                 <Link
                     href="/admin/eventos"
-                    className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                     <ArrowLeft className="w-4 h-4" />
                     Eventos
                 </Link>
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div>
-                        <p className="text-xs text-zinc-500 capitalize">{diaSemana}</p>
-                        <h1 className="text-2xl font-bold text-zinc-50">{evento.nome}</h1>
-                        <p className="text-zinc-400 text-sm mt-0.5">{dataFormatada}</p>
-                        <p className="text-zinc-500 text-sm mt-1">
+                        <p className="text-xs text-muted-foreground capitalize">{diaSemana}</p>
+                        <h1 className="text-2xl font-bold text-foreground">{evento.nome}</h1>
+                        <p className="text-muted-foreground text-sm mt-0.5">{dataFormatada}</p>
+                        <p className="text-muted-foreground text-sm mt-1">
                             {evento.hora_inicio.slice(0, 5)} – {evento.hora_fim.slice(0, 5)}
                             {' · '}VIP até {evento.hora_vip_limite.slice(0, 5)}
                         </p>
@@ -214,8 +214,7 @@ export default async function EventoOverviewPage({
                         {listaTipos.map((t) => (
                             <span
                                 key={t.id}
-                                className="text-xs font-medium px-2.5 py-1 rounded-full border"
-                                style={{ backgroundColor: 'var(--cor-tema-subtle)', color: 'var(--cor-tema)', borderColor: 'var(--cor-tema-subtle)' }}
+                                className="text-xs font-medium px-2.5 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary"
                             >
                                 {t.nome}
                             </span>
@@ -252,19 +251,19 @@ export default async function EventoOverviewPage({
                     icon={<CheckCircle className="w-4 h-4" />}
                     color="text-emerald-400"
                 />
-                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-3">
+                <div className="glass-card border-white/5 rounded-xl p-4 space-y-3">
                     <div className="flex items-center justify-between">
-                        <p className="text-xs text-zinc-500">Taxa de ocupação</p>
-                        <Clock className="w-4 h-4" style={{ color: 'var(--cor-tema)' }} />
+                        <p className="text-xs text-muted-foreground">Taxa de ocupação</p>
+                        <Clock className="w-4 h-4 text-primary" />
                     </div>
-                    <p className="text-2xl font-bold text-zinc-50">{taxaOcupacao}%</p>
-                    <div className="w-full bg-zinc-800 rounded-full h-1.5">
+                    <p className="text-2xl font-bold text-foreground">{taxaOcupacao}%</p>
+                    <div className="w-full bg-muted/50 rounded-full h-1.5">
                         <div
-                            className="h-1.5 rounded-full transition-all"
-                            style={{ width: `${Math.min(taxaOcupacao, 100)}%`, backgroundColor: 'var(--cor-tema)' }}
+                            className="h-1.5 rounded-full transition-all bg-primary"
+                            style={{ width: `${Math.min(taxaOcupacao, 100)}%` }}
                         />
                     </div>
-                    <p className="text-xs text-zinc-600">
+                    <p className="text-xs text-muted-foreground">
                         {presentes} / {capacidade}
                     </p>
                 </div>
@@ -280,10 +279,10 @@ export default async function EventoOverviewPage({
             {/* Gráficos */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Check-ins por hora */}
-                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4">
-                    <h2 className="text-sm font-semibold text-zinc-300">Check-ins por hora</h2>
+                <div className="glass-card border-white/5 rounded-xl p-5 space-y-4">
+                    <h2 className="text-sm font-semibold text-foreground">Check-ins por hora</h2>
                     {(checkins ?? []).length === 0 ? (
-                        <p className="text-zinc-600 text-sm py-8 text-center">Nenhum check-in ainda</p>
+                        <p className="text-muted-foreground text-sm py-8 text-center">Nenhum check-in ainda</p>
                     ) : (
                         <div className="flex items-end gap-1.5" style={{ height: 96 + 20 }}>
                             {horasExibidas.map((hora) => {
@@ -295,12 +294,12 @@ export default async function EventoOverviewPage({
                                     <div key={hora} className="flex-1 flex flex-col items-center gap-1">
                                         <div className="w-full flex items-end" style={{ height: 96 }}>
                                             <div
-                                                className={`w-full rounded-t-sm ${count > 0 ? 'bg-emerald-500' : 'bg-zinc-800'}`}
+                                                className={`w-full rounded-t-sm ${count > 0 ? 'bg-emerald-500' : 'bg-muted/50'}`}
                                                 style={{ height: barHeight }}
                                                 title={`${hora}h: ${count}`}
                                             />
                                         </div>
-                                        <span className="text-[10px] text-zinc-600">{hora}h</span>
+                                        <span className="text-[10px] text-muted-foreground">{hora}h</span>
                                     </div>
                                 )
                             })}
@@ -309,10 +308,10 @@ export default async function EventoOverviewPage({
                 </div>
 
                 {/* Distribuição por tipo de lista */}
-                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-4">
-                    <h2 className="text-sm font-semibold text-zinc-300">Distribuição por tipo de lista</h2>
+                <div className="glass-card border-white/5 rounded-xl p-5 space-y-4">
+                    <h2 className="text-sm font-semibold text-foreground">Distribuição por tipo de lista</h2>
                     {totalCheckins === 0 ? (
-                        <p className="text-zinc-600 text-sm py-8 text-center">Nenhum check-in ainda</p>
+                        <p className="text-muted-foreground text-sm py-8 text-center">Nenhum check-in ainda</p>
                     ) : (
                         <div className="space-y-3 pt-2">
                             {Object.entries(tipoCounts).map(([nome, count], idx) => {
@@ -320,11 +319,11 @@ export default async function EventoOverviewPage({
                                 const colorStyle = TIPO_COLORS[idx % TIPO_COLORS.length]!
                                 return (
                                     <div key={nome} className="space-y-1">
-                                        <div className="flex justify-between text-xs text-zinc-400">
+                                        <div className="flex justify-between text-xs text-muted-foreground">
                                             <span>{nome}</span>
                                             <span>{count} ({pct}%)</span>
                                         </div>
-                                        <div className="w-full bg-zinc-800 rounded-full h-1.5">
+                                        <div className="w-full bg-muted/50 rounded-full h-1.5">
                                             <div
                                                 className="h-1.5 rounded-full"
                                                 style={{ width: `${pct}%`, backgroundColor: colorStyle }}
@@ -340,46 +339,45 @@ export default async function EventoOverviewPage({
 
             {/* Lista de convidados */}
             <div className="space-y-3">
-                <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest">
+                <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
                     Convidados ({(guests ?? []).length})
                 </h2>
                 {(guests ?? []).length === 0 ? (
-                    <div className="flex flex-col items-center gap-3 py-16 border border-dashed border-zinc-800 rounded-2xl">
-                        <Users className="w-8 h-8 text-zinc-700" />
-                        <p className="text-zinc-500 text-sm">Nenhum convidado ainda</p>
+                    <div className="flex flex-col items-center gap-3 py-16 border border-dashed border-border rounded-2xl">
+                        <Users className="w-8 h-8 text-muted-foreground" />
+                        <p className="text-muted-foreground text-sm">Nenhum convidado ainda</p>
                     </div>
                 ) : (
-                    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+                    <div className="glass-card border-white/5 rounded-xl overflow-hidden">
                         <table className="w-full text-sm">
                             <thead>
-                                <tr className="border-b border-zinc-800">
-                                    <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase tracking-widest">
+                                <tr className="border-b border-white/5">
+                                    <th className="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-widest">
                                         Nome
                                     </th>
                                     <th className="text-left px-4 py-3 text-xs font-medium text-zinc-500 uppercase tracking-widest">
                                         Lista
                                     </th>
-                                    <th className="text-right px-4 py-3 text-xs font-medium text-zinc-500 uppercase tracking-widest">
+                                    <th className="text-right px-4 py-3 text-xs font-medium text-muted-foreground uppercase tracking-widest">
                                         Status
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-zinc-800/50">
+                            <tbody className="divide-y divide-white/5">
                                 {guestsSorted.map((guest) => {
                                     const listaTipoNome = (guest.lista_tipos as unknown as { nome: string } | null)?.nome ?? null
                                     return (
-                                        <tr key={guest.id} className="hover:bg-zinc-800/30 transition-colors">
-                                            <td className="px-4 py-3 text-zinc-200 font-medium">{guest.nome}</td>
+                                        <tr key={guest.id} className="hover:bg-muted/30 transition-colors">
+                                            <td className="px-4 py-3 text-foreground font-medium">{guest.nome}</td>
                                             <td className="px-4 py-3">
                                                 {listaTipoNome ? (
                                                     <span
-                                                        className="text-xs font-medium px-2 py-0.5 rounded-full border"
-                                                        style={{ backgroundColor: 'var(--cor-tema-subtle)', color: 'var(--cor-tema)', borderColor: 'var(--cor-tema-subtle)' }}
+                                                        className="text-xs font-medium px-2 py-0.5 rounded-full border border-primary/30 bg-primary/10 text-primary"
                                                     >
                                                         {listaTipoNome}
                                                     </span>
                                                 ) : (
-                                                    <span className="text-xs text-zinc-600">—</span>
+                                                    <span className="text-xs text-muted-foreground">—</span>
                                                 )}
                                             </td>
                                             <td className="px-4 py-3 text-right">
@@ -401,14 +399,14 @@ export default async function EventoOverviewPage({
             {/* Submissões */}
             {(submissoes ?? []).length > 0 && (
                 <div className="space-y-6">
-                    <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest">
+                    <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
                         Submissões ({(submissoes ?? []).length})
                     </h2>
                     {remetentesOrdenados.map(([remetente, subs]) => (
                         <div key={remetente} className="space-y-2">
                             <div className="flex items-center gap-3">
-                                <p className="text-sm font-semibold text-zinc-200">{remetente}</p>
-                                <span className="text-xs text-zinc-600">
+                                <p className="text-sm font-semibold text-foreground">{remetente}</p>
+                                <span className="text-xs text-muted-foreground">
                                     {subs.length} lista{subs.length !== 1 ? 's' : ''}
                                 </span>
                             </div>
@@ -427,31 +425,30 @@ export default async function EventoOverviewPage({
 
                     {statsRemetente.some((s) => s.aprovados > 0) && (
                         <div className="space-y-3">
-                            <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">
+                            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
                                 Conversão por remetente
                             </h3>
-                            <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+                            <div className="glass-card border-white/5 rounded-xl overflow-hidden">
                                 <table className="w-full text-sm">
                                     <thead>
-                                        <tr className="border-b border-zinc-800">
-                                            <th className="text-left px-4 py-2.5 text-xs text-zinc-500">Remetente</th>
-                                            <th className="text-right px-4 py-2.5 text-xs text-zinc-500">Enviados</th>
-                                            <th className="text-right px-4 py-2.5 text-xs text-zinc-500">Aprovados</th>
-                                            <th className="text-right px-4 py-2.5 text-xs text-zinc-500">Check-ins</th>
-                                            <th className="text-right px-4 py-2.5 text-xs text-zinc-500">Conversão</th>
+                                        <tr className="border-b border-white/5">
+                                            <th className="text-left px-4 py-2.5 text-xs text-muted-foreground">Remetente</th>
+                                            <th className="text-right px-4 py-2.5 text-xs text-muted-foreground">Enviados</th>
+                                            <th className="text-right px-4 py-2.5 text-xs text-muted-foreground">Aprovados</th>
+                                            <th className="text-right px-4 py-2.5 text-xs text-muted-foreground">Check-ins</th>
+                                            <th className="text-right px-4 py-2.5 text-xs text-muted-foreground">Conversão</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-zinc-800/50">
+                                    <tbody className="divide-y divide-white/5">
                                         {statsRemetente.map(({ remetente, totalEnviados, aprovados, presentes, pctConversao }) => (
                                             <tr key={remetente}>
-                                                <td className="px-4 py-2.5 text-zinc-200 font-medium">{remetente}</td>
-                                                <td className="px-4 py-2.5 text-right text-zinc-400">{totalEnviados}</td>
-                                                <td className="px-4 py-2.5 text-right text-zinc-400">{aprovados}</td>
+                                                <td className="px-4 py-2.5 text-foreground font-medium">{remetente}</td>
+                                                <td className="px-4 py-2.5 text-right text-muted-foreground">{totalEnviados}</td>
+                                                <td className="px-4 py-2.5 text-right text-muted-foreground">{aprovados}</td>
                                                 <td className="px-4 py-2.5 text-right text-emerald-400 font-medium">{presentes}</td>
                                                 <td className="px-4 py-2.5 text-right">
                                                     <span
-                                                        className={`font-semibold ${pctConversao > 0 ? '' : 'text-zinc-600'}`}
-                                                        style={pctConversao > 0 ? { color: 'var(--cor-tema)' } : undefined}
+                                                        className={`font-semibold ${pctConversao > 0 ? 'text-primary' : 'text-muted-foreground'}`}
                                                     >
                                                         {pctConversao}%
                                                     </span>

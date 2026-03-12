@@ -24,7 +24,7 @@ const STATUS_STYLE: Record<SubStatus, string> = {
     Pendente: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
     Aprovado: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
     Rejeitado: 'bg-red-500/15 text-red-400 border-red-500/30',
-    Rascunho: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
+    Rascunho: 'bg-muted/50 text-muted-foreground border-border',
 }
 
 export function SubmissaoCard(props: SubmissaoCardProps) {
@@ -49,16 +49,16 @@ export function SubmissaoCard(props: SubmissaoCardProps) {
     }
 
     return (
-        <div className={`bg-zinc-900 border rounded-xl p-5 space-y-4 transition-all ${props.status === 'Pendente' ? 'border-amber-500/20' : 'border-zinc-800'
+        <div className={`glass-card border rounded-xl p-5 space-y-4 transition-all ${props.status === 'Pendente' ? 'border-amber-500/20 shadow-amber-500/5' : 'border-white/5'
             }`}>
             {/* Header */}
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <p className="text-xs text-zinc-500">{props.eventoNome} · {dataEvento}</p>
-                    <p className="font-semibold text-zinc-100 mt-0.5">
-                        {props.submitterLabel ?? <span className="text-zinc-500 italic">Anônimo</span>}
+                    <p className="text-xs text-muted-foreground">{props.eventoNome} · {dataEvento}</p>
+                    <p className="font-semibold text-foreground mt-0.5">
+                        {props.submitterLabel ?? <span className="text-muted-foreground italic">Anônimo</span>}
                     </p>
-                    <p className="text-xs text-zinc-500 mt-0.5">Enviado em {dataSubmit}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Enviado em {dataSubmit}</p>
                 </div>
                 <div className="flex flex-col items-end gap-2 shrink-0">
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${STATUS_STYLE[props.status]}`}>
@@ -69,7 +69,7 @@ export function SubmissaoCard(props: SubmissaoCardProps) {
                             {props.listaTipoNome}
                         </span>
                     )}
-                    <span className="text-xs text-zinc-500">{props.parsedNames.length} nomes</span>
+                    <span className="text-xs text-muted-foreground">{props.parsedNames.length} nomes</span>
                 </div>
             </div>
 
@@ -77,7 +77,7 @@ export function SubmissaoCard(props: SubmissaoCardProps) {
             <div>
                 <button
                     onClick={() => setExpanded((v) => !v)}
-                    className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 transition-colors mb-2"
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mb-2"
                 >
                     {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     {expanded ? 'Ocultar nomes' : 'Ver nomes'}
@@ -87,7 +87,7 @@ export function SubmissaoCard(props: SubmissaoCardProps) {
                         {props.parsedNames.map((nome, i) => (
                             <span
                                 key={i}
-                                className="text-xs bg-zinc-800 text-zinc-300 border border-zinc-700 px-2 py-0.5 rounded-full"
+                                className="text-xs bg-muted/50 text-foreground border border-border px-2 py-0.5 rounded-full"
                             >
                                 {nome}
                             </span>
@@ -105,7 +105,7 @@ export function SubmissaoCard(props: SubmissaoCardProps) {
 
             {/* Actions */}
             {props.status === 'Pendente' && (
-                <div className="pt-1 border-t border-zinc-800 space-y-3">
+                <div className="pt-1 border-t border-border space-y-3">
                     {!showRejectForm ? (
                         <div className="flex gap-2">
                             <button
@@ -128,12 +128,12 @@ export function SubmissaoCard(props: SubmissaoCardProps) {
                         </div>
                     ) : (
                         <div className="space-y-2">
-                            <input
+                                <input
                                 type="text"
                                 value={rejectNote}
                                 onChange={(e) => setRejectNote(e.target.value)}
                                 placeholder="Motivo da rejeição..."
-                                className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-xs focus:outline-none focus:ring-1 focus:ring-red-500"
+                                className="w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-red-500"
                             />
                             <div className="flex gap-2">
                                 <button
@@ -146,7 +146,7 @@ export function SubmissaoCard(props: SubmissaoCardProps) {
                                 </button>
                                 <button
                                     onClick={() => setShowRejectForm(false)}
-                                    className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors px-2"
+                                    className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2"
                                 >
                                     Cancelar
                                 </button>

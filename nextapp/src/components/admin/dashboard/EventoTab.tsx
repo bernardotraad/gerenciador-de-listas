@@ -50,61 +50,64 @@ export function EventoTab({ eventos, initialData, initialEventoId }: Props) {
                     value={eventoId}
                     onChange={e => selecionarEvento(e.target.value)}
                     disabled={isPending}
-                    className="bg-zinc-900 border border-zinc-700 text-zinc-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[var(--cor-tema)] focus:border-[var(--cor-tema)] disabled:opacity-50 min-w-[280px]"
+                    className="glass-card bg-black/20 border border-white/10 text-foreground text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary disabled:opacity-50 min-w-[280px] shadow-sm appearance-none"
+                    style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a1a1aa' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em', paddingRight: '2.5rem' }}
                 >
-                    <option value="">Selecione um evento...</option>
+                    <option value="" className="bg-muted/50 text-foreground">Selecione um evento...</option>
                     {eventos.map(e => (
-                        <option key={e.id} value={e.id}>{e.label}</option>
+                        <option key={e.id} value={e.id} className="bg-muted/50 text-foreground">{e.label}</option>
                     ))}
                 </select>
-                {isPending && <span className="text-xs text-zinc-500">Carregando...</span>}
+                {isPending && <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground animate-pulse">Carregando...</span>}
             </div>
 
             {!data ? (
-                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-12 text-center">
-                    <p className="text-zinc-600 text-sm">Selecione um evento para ver as estatísticas</p>
+                <div className="glass-card border border-white/5 rounded-2xl p-16 text-center shadow-xl">
+                    <p className="text-muted-foreground text-sm font-medium">Selecione um evento para ver as estatísticas</p>
                 </div>
             ) : (
                 <>
                     {/* Header do evento */}
-                    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                        <div className="flex items-start justify-between flex-wrap gap-4">
+                    <div className="glass-card border border-white/5 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-8 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 translate-x-1/2 -translate-y-1/2" />
+                        
+                        <div className="flex items-start justify-between flex-wrap gap-4 relative z-10">
                             <div>
-                                <h3 className="text-lg font-semibold text-zinc-100">{data.evento.nome}</h3>
-                                <p className="text-zinc-500 text-sm mt-0.5">{data.evento.data}</p>
+                                <h3 className="text-xl font-bold text-foreground">{data.evento.nome}</h3>
+                                <p className="text-muted-foreground text-sm font-medium mt-1">{data.evento.data}</p>
                             </div>
-                            <div className="flex gap-6">
+                            <div className="flex gap-8">
                                 <div className="text-right">
-                                    <div className="flex items-center gap-1.5 text-zinc-400 text-xs mb-1">
+                                    <div className="flex items-center justify-end gap-1.5 text-muted-foreground text-xs font-bold uppercase tracking-widest mb-1.5">
                                         <CheckCircle className="w-3.5 h-3.5" />
                                         <span>Check-ins</span>
                                     </div>
-                                    <p className="text-2xl font-bold text-zinc-100">{data.evento.totalCheckins}</p>
+                                    <p className="text-3xl font-black tracking-tight text-foreground">{data.evento.totalCheckins}</p>
                                 </div>
                                 <div className="text-right">
-                                    <div className="flex items-center gap-1.5 text-zinc-400 text-xs mb-1">
+                                    <div className="flex items-center justify-end gap-1.5 text-muted-foreground text-xs font-bold uppercase tracking-widest mb-1.5">
                                         <Users className="w-3.5 h-3.5" />
                                         <span>Capacidade</span>
                                     </div>
-                                    <p className="text-2xl font-bold text-zinc-100">{data.evento.capacidade ?? '—'}</p>
+                                    <p className="text-3xl font-black tracking-tight text-foreground">{data.evento.capacidade ?? '—'}</p>
                                 </div>
                                 <div className="text-right">
-                                    <div className="flex items-center gap-1.5 text-zinc-400 text-xs mb-1">
+                                    <div className="flex items-center justify-end gap-1.5 text-muted-foreground text-xs font-bold uppercase tracking-widest mb-1.5">
                                         <TrendingUp className="w-3.5 h-3.5" />
                                         <span>Ocupação</span>
                                     </div>
-                                    <p className={`text-2xl font-bold ${data.evento.ocupacao >= 80 ? 'text-emerald-400' : data.evento.ocupacao >= 50 ? 'text-amber-400' : 'text-zinc-100'}`}>
+                                    <p className={`text-3xl font-black tracking-tight ${data.evento.ocupacao >= 80 ? 'text-emerald-400' : data.evento.ocupacao >= 50 ? 'text-amber-400' : 'text-primary'}`}>
                                         {data.evento.ocupacao}%
                                     </p>
                                 </div>
                             </div>
                         </div>
                         {data.evento.capacidade > 0 && (
-                            <div className="mt-4">
-                                <div className="w-full bg-zinc-800 rounded-full h-2">
+                            <div className="mt-6 relative z-10">
+                                <div className="w-full bg-black/40 border border-white/5 rounded-full h-2">
                                     <div
-                                        className="h-2 rounded-full transition-all"
-                                        style={{ width: `${Math.min(data.evento.ocupacao, 100)}%`, backgroundColor: 'var(--cor-tema)' }}
+                                        className="h-full rounded-full transition-all bg-primary shadow-[0_0_12px_rgba(var(--primary),0.6)]"
+                                        style={{ width: `${Math.min(data.evento.ocupacao, 100)}%` }}
                                     />
                                 </div>
                             </div>

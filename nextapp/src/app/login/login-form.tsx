@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { SlideUp, ScaleIn } from '@/components/ui/motion'
+import { LogIn } from 'lucide-react'
 
 export function LoginForm() {
     const [email, setEmail] = useState('')
@@ -26,26 +28,28 @@ export function LoginForm() {
     }
 
     return (
-        <main className="min-h-screen flex items-center justify-center bg-zinc-950 px-4">
+        <main className="min-h-screen flex items-center justify-center bg-transparent px-4 relative overflow-hidden">
+            {/* Ambient background glow specifically for login page */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 blur-[130px] rounded-full pointer-events-none -z-10" />
+
             <div className="w-full max-w-sm">
                 {/* Logo / Header */}
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4 shadow-lg" style={{ backgroundColor: 'var(--cor-tema)' }}>
-                        <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                        </svg>
-                    </div>
-                    <h1 className="text-2xl font-bold text-zinc-50">Lista VIP</h1>
-                    <p className="text-zinc-400 text-sm mt-1">Acesse o painel de gerenciamento</p>
-                </div>
+                <SlideUp delay={0.1} className="text-center mb-8">
+                    <ScaleIn delay={0.2} className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-xl shadow-primary/20 bg-gradient-to-br from-primary to-primary/60 border border-white/20">
+                        <LogIn className="w-8 h-8 text-white" strokeWidth={1.5} />
+                    </ScaleIn>
+                    <h1 className="text-3xl font-bold text-foreground tracking-tight">Acesso VIP</h1>
+                    <p className="text-muted-foreground text-sm mt-2">Painel de gerenciamento exclusivo</p>
+                </SlideUp>
 
                 {/* Form Card */}
-                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-xl">
-                    <form onSubmit={handleLogin} className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+                <SlideUp delay={0.2} className="glass-card rounded-[2rem] p-8 relative overflow-hidden">
+                    {/* Subtle top edge highlight */}
+                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                    
+                    <form onSubmit={handleLogin} className="space-y-5">
+                        <div className="space-y-1.5">
+                            <label className="block text-sm font-medium text-foreground/80">
                                 Email
                             </label>
                             <input
@@ -55,12 +59,12 @@ export function LoginForm() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="admin@clube.com"
                                 required
-                                className="w-full px-3.5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cor-tema)] focus:border-transparent transition-all"
+                                className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-foreground placeholder-muted-foreground transition-all focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 hover:bg-black/30"
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+                        <div className="space-y-1.5">
+                            <label className="block text-sm font-medium text-foreground/80">
                                 Senha
                             </label>
                             <input
@@ -70,23 +74,25 @@ export function LoginForm() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
                                 required
-                                className="w-full px-3.5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 placeholder-zinc-500 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cor-tema)] focus:border-transparent transition-all"
+                                className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-foreground placeholder-muted-foreground transition-all focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 hover:bg-black/30"
                             />
                         </div>
 
                         {error && (
-                            <div className="flex items-center gap-2 text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg px-3.5 py-2.5">
-                                <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
-                                </svg>
-                                {error}
-                            </div>
+                            <ScaleIn delay={0.1}>
+                                <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">
+                                    <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
+                                    </svg>
+                                    {error}
+                                </div>
+                            </ScaleIn>
                         )}
 
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-2.5 px-4 [background-color:var(--cor-tema)] hover:[background-color:var(--cor-tema-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-lg text-sm transition-all duration-150 mt-2"
+                            className="w-full py-3.5 px-4 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-semibold rounded-xl text-sm transition-all duration-300 mt-4 shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5"
                         >
                             {loading ? (
                                 <span className="flex items-center justify-center gap-2">
@@ -96,14 +102,16 @@ export function LoginForm() {
                                     </svg>
                                     Entrando...
                                 </span>
-                            ) : 'Entrar'}
+                            ) : 'Acessar Conta'}
                         </button>
                     </form>
-                </div>
+                </SlideUp>
 
-                <p suppressHydrationWarning className="text-center text-zinc-600 text-xs mt-6">
-                    Gerenciador de Listas VIP © {new Date().getFullYear()}
-                </p>
+                <SlideUp delay={0.4}>
+                    <p suppressHydrationWarning className="text-center text-muted-foreground text-sm mt-8">
+                        Gerenciador VIP © {new Date().getFullYear()}
+                    </p>
+                </SlideUp>
             </div>
         </main>
     )

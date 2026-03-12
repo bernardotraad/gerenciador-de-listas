@@ -7,7 +7,6 @@ export interface BoateSettings {
     id: string
     nome: string
     logo_url: string | null
-    cor_tema: string
     capacidade_padrao: number
 }
 
@@ -26,7 +25,7 @@ export async function getBoateSettings(): Promise<{ data?: BoateSettings; error?
 
     const { data, error } = await supabase
         .from('boates')
-        .select('id, nome, logo_url, cor_tema, capacidade_padrao')
+        .select('id, nome, logo_url, capacidade_padrao')
         .eq('id', profile.boate_id)
         .single()
 
@@ -35,7 +34,7 @@ export async function getBoateSettings(): Promise<{ data?: BoateSettings; error?
 }
 
 export async function atualizarBoate(
-    updates: { nome?: string; cor_tema?: string; capacidade_padrao?: number }
+    updates: { nome?: string; capacidade_padrao?: number }
 ): Promise<{ error?: string }> {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()

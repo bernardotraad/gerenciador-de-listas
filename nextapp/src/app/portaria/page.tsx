@@ -103,8 +103,8 @@ export default async function PortariaPage({ searchParams }: Props) {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-zinc-50">Check-in</h1>
-                    <p className="text-zinc-400 text-sm mt-1">Controle de entrada</p>
+                    <h1 className="text-2xl font-bold text-foreground">Check-in</h1>
+                    <p className="text-muted-foreground text-sm mt-1">Controle de entrada</p>
                 </div>
                 {eventoAtivo && !eventoJaComecou && (
                     <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-amber-950/40 border border-amber-800/40">
@@ -116,9 +116,9 @@ export default async function PortariaPage({ searchParams }: Props) {
                     <div className="flex flex-col items-end gap-1">
                         <div className="flex items-center gap-2">
                             <RealtimePortaria eventoInstanciaId={eventoAtivo.id} />
-                            <p className="text-sm font-semibold text-zinc-200">{eventoAtivo.nome}</p>
+                            <p className="text-sm font-semibold text-foreground">{eventoAtivo.nome}</p>
                         </div>
-                        <p className="text-xs text-zinc-500 capitalize">
+                        <p className="text-xs text-muted-foreground capitalize">
                             {format(new Date(eventoAtivo.data_efetiva + 'T12:00:00'), "EEEE, dd/MM", { locale: ptBR })}
                         </p>
                     </div>
@@ -126,11 +126,11 @@ export default async function PortariaPage({ searchParams }: Props) {
             </div>
 
             {!eventoAtivo ? (
-                <div className="flex flex-col items-center justify-center gap-4 py-24 border border-dashed border-zinc-800 rounded-2xl text-center">
-                    <DoorOpen className="w-12 h-12 text-zinc-600" />
+                <div className="flex flex-col items-center justify-center gap-4 py-24 border border-dashed border-border rounded-2xl text-center">
+                    <DoorOpen className="w-12 h-12 text-muted-foreground" />
                     <div>
-                        <p className="text-zinc-300 font-medium">Nenhum evento ativo</p>
-                        <p className="text-zinc-500 text-sm mt-1">Não há eventos agendados para hoje ou próximos dias.</p>
+                        <p className="text-foreground font-medium">Nenhum evento ativo</p>
+                        <p className="text-muted-foreground text-sm mt-1">Não há eventos agendados para hoje ou próximos dias.</p>
                     </div>
                 </div>
             ) : eventoAtivo && !eventoJaComecou ? (
@@ -142,11 +142,11 @@ export default async function PortariaPage({ searchParams }: Props) {
                         <p className="text-amber-300 font-medium">
                             {isProximoEvento ? 'Próximo evento' : 'Aguardando abertura'}
                         </p>
-                        <p className="text-zinc-400 text-sm mt-1">
+                        <p className="text-muted-foreground text-sm mt-1">
                             {eventoAtivo.nome} · abre às {eventoAtivo.hora_inicio.slice(0, 5)}
                         </p>
                         {isProximoEvento && (
-                            <p className="text-zinc-500 text-xs mt-1">
+                            <p className="text-muted-foreground text-xs mt-1">
                                 {format(new Date(eventoAtivo.data_efetiva + 'T12:00:00'), "EEEE, dd/MM", { locale: ptBR })}
                             </p>
                         )}
@@ -156,26 +156,26 @@ export default async function PortariaPage({ searchParams }: Props) {
                 <>
                     {/* Contador */}
                     <div className="grid grid-cols-3 gap-3">
-                        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
+                        <div className="glass-card border-white/5 rounded-xl p-4 text-center">
                             <p className="text-2xl font-bold text-emerald-400">{totalPresentes}</p>
-                            <p className="text-xs text-zinc-500 mt-1">Presentes</p>
+                            <p className="text-xs text-muted-foreground mt-1">Presentes</p>
                         </div>
-                        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
-                            <p className="text-2xl font-bold text-zinc-100">
+                        <div className="glass-card border-white/5 rounded-xl p-4 text-center">
+                            <p className="text-2xl font-bold text-foreground">
                                 {eventoAtivo.capacidade - totalPresentes}
                             </p>
-                            <p className="text-xs text-zinc-500 mt-1">Vagas restantes</p>
+                            <p className="text-xs text-muted-foreground mt-1">Vagas restantes</p>
                         </div>
-                        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center">
-                            <p className="text-2xl font-bold text-zinc-400">{eventoAtivo.capacidade}</p>
-                            <p className="text-xs text-zinc-500 mt-1">Capacidade</p>
+                        <div className="glass-card border-white/5 rounded-xl p-4 text-center">
+                            <p className="text-2xl font-bold text-muted-foreground">{eventoAtivo.capacidade}</p>
+                            <p className="text-xs text-muted-foreground mt-1">Capacidade</p>
                         </div>
                     </div>
 
                     {/* Barra de progresso de ocupação */}
                     {eventoAtivo.capacidade > 0 && (
                         <div className="space-y-1">
-                            <div className="w-full bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                            <div className="w-full bg-muted/50 rounded-full h-1.5 overflow-hidden">
                                 <div
                                     className={`h-full rounded-full transition-all duration-500 ${
                                         totalPresentes / eventoAtivo.capacidade >= 0.9
@@ -187,7 +187,7 @@ export default async function PortariaPage({ searchParams }: Props) {
                                     style={{ width: `${Math.min(100, (totalPresentes / eventoAtivo.capacidade) * 100)}%` }}
                                 />
                             </div>
-                            <p className="text-xs text-zinc-600 text-right">
+                            <p className="text-xs text-muted-foreground text-right">
                                 {Math.round((totalPresentes / eventoAtivo.capacidade) * 100)}% da capacidade
                             </p>
                         </div>
@@ -199,11 +199,11 @@ export default async function PortariaPage({ searchParams }: Props) {
                     {/* Resultados */}
                     {q && q.trim() ? (
                         <section className="space-y-2">
-                            <p className="text-xs text-zinc-500 font-medium uppercase tracking-widest">
+                            <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">
                                 {guests.length} resultado{guests.length !== 1 ? 's' : ''} para &quot;{q}&quot;
                             </p>
                             {guests.length === 0 ? (
-                                <p className="text-center text-zinc-500 text-sm py-8">
+                                <p className="text-center text-muted-foreground text-sm py-8">
                                     Nenhum convidado encontrado com este nome.
                                 </p>
                             ) : (
@@ -227,7 +227,7 @@ export default async function PortariaPage({ searchParams }: Props) {
                         <>
                             {pendentes.length > 0 && (
                                 <section className="space-y-2">
-                                    <p className="text-xs text-zinc-500 font-medium uppercase tracking-widest">
+                                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">
                                         Aguardando check-in ({pendentes.length})
                                     </p>
                                     <div className="space-y-2">
@@ -249,7 +249,7 @@ export default async function PortariaPage({ searchParams }: Props) {
 
                             {presentes.length > 0 && (
                                 <section className="space-y-2">
-                                    <p className="text-xs text-zinc-500 font-medium uppercase tracking-widest">
+                                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest">
                                         Já presentes ({presentes.length})
                                     </p>
                                     <div className="space-y-2">
@@ -270,7 +270,7 @@ export default async function PortariaPage({ searchParams }: Props) {
                             )}
 
                             {pendentes.length === 0 && presentes.length === 0 && (
-                                <p className="text-center text-zinc-500 text-sm py-10">
+                                <p className="text-center text-muted-foreground text-sm py-10">
                                     Nenhum convidado na lista deste evento.
                                 </p>
                             )}

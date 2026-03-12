@@ -43,17 +43,16 @@ export function DashboardTabs({
     return (
         <div className="space-y-6">
             {/* Tab bar */}
-            <div className="flex gap-1 bg-zinc-900 border border-zinc-800 rounded-xl p-1 w-fit">
+            <div className="flex gap-1 p-1 bg-black/20 backdrop-blur-md border border-white/10 rounded-xl w-fit">
                 {TABS.map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                             activeTab === tab.id
-                                ? 'text-white shadow-sm'
-                                : 'text-zinc-400 hover:text-zinc-200'
+                                ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
                         }`}
-                        style={activeTab === tab.id ? { backgroundColor: 'var(--cor-tema)' } : undefined}
                     >
                         {tab.label}
                     </button>

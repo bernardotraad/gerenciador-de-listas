@@ -58,17 +58,17 @@ export default async function HistoricoPage() {
         <div className="space-y-6">
             <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--cor-tema-subtle)' }}>
-                        <History className="w-5 h-5" style={{ color: 'var(--cor-tema)' }} />
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-primary/10">
+                        <History className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-zinc-50">Histórico</h1>
-                        <p className="text-zinc-400 text-sm mt-0.5">
+                        <h1 className="text-2xl font-bold text-foreground">Histórico</h1>
+                        <p className="text-muted-foreground text-sm mt-0.5">
                             Eventos passados e suas estatísticas de check-in
                         </p>
                     </div>
                 </div>
-                <span className="text-xs text-zinc-600 bg-zinc-900 border border-zinc-800 rounded-full px-3 py-1">
+                <span className="text-xs text-muted-foreground glass-card border-white/5 rounded-full px-3 py-1">
                     {eventos.length} evento{eventos.length !== 1 ? 's' : ''}
                 </span>
             </div>

@@ -44,7 +44,7 @@ export function NovoEventoDialog({ listaTipos, capacidadePadrao }: NovoEventoDia
             hora_vip_limite: '00:00',
             capacidade: capacidadePadrao ?? 100,
             lista_tipo_ids: [],
-            semanas: 8,
+            semanas: 1,
             data_referencia: format(new Date(), 'yyyy-MM-dd'),
         },
     })
@@ -62,22 +62,22 @@ export function NovoEventoDialog({ listaTipos, capacidadePadrao }: NovoEventoDia
         })
     }
 
-    const inputCls = "w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cor-tema)] focus:border-transparent transition-all placeholder-zinc-500"
-    const labelCls = "block text-xs font-medium text-zinc-400 mb-1"
+    const inputCls = "w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-muted-foreground"
+    const labelCls = "block text-xs font-medium text-muted-foreground mb-1"
     const errorCls = "text-red-400 text-xs mt-1"
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <button className="flex items-center gap-2 px-4 py-2 [background-color:var(--cor-tema)] hover:[background-color:var(--cor-tema-hover)] text-white text-sm font-semibold rounded-lg transition-colors shadow-lg">
+                <button className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold rounded-lg transition-colors shadow-lg">
                     <Plus className="w-4 h-4" />
                     Novo Evento
                 </button>
             </DialogTrigger>
 
-            <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 max-w-lg">
+            <DialogContent className="glass-card border-white/5 text-foreground max-w-lg">
                 <DialogHeader>
-                    <DialogTitle className="text-zinc-50">Criar Evento Recorrente</DialogTitle>
+                    <DialogTitle className="text-foreground">Criar Evento</DialogTitle>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
@@ -134,9 +134,9 @@ export function NovoEventoDialog({ listaTipos, capacidadePadrao }: NovoEventoDia
                             render={({ field }) => (
                                 <div className="space-y-1.5">
                                     {listaTipos.length === 0 ? (
-                                        <p className="text-zinc-500 text-xs">
+                                        <p className="text-muted-foreground text-xs">
                                             Nenhum tipo de lista ativo. Crie tipos em{' '}
-                                            <span style={{ color: 'var(--cor-tema)' }}>Tipos de Lista</span>.
+                                            <span className="text-primary">Tipos de Lista</span>.
                                         </p>
                                     ) : (
                                         listaTipos.map((tipo) => {
@@ -155,9 +155,9 @@ export function NovoEventoDialog({ listaTipos, capacidadePadrao }: NovoEventoDia
                                                                 : field.value.filter((v) => v !== tipo.id)
                                                             field.onChange(next)
                                                         }}
-                                                        className="accent-[var(--cor-tema)] w-4 h-4 rounded"
+                                                        className="accent-primary w-4 h-4 rounded"
                                                     />
-                                                    <span className="text-sm text-zinc-300 group-hover:text-zinc-100 transition-colors">
+                                                    <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                                                         {tipo.nome}
                                                     </span>
                                                 </label>
@@ -184,14 +184,14 @@ export function NovoEventoDialog({ listaTipos, capacidadePadrao }: NovoEventoDia
                         <button
                             type="button"
                             onClick={() => setOpen(false)}
-                            className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
+                            className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             disabled={pending}
-                            className="flex items-center gap-2 px-4 py-2 [background-color:var(--cor-tema)] hover:[background-color:var(--cor-tema-hover)] disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground text-sm font-semibold rounded-lg transition-colors"
                         >
                             {pending && <Loader2 className="w-4 h-4 animate-spin" />}
                             {pending ? 'Criando...' : 'Criar Evento'}

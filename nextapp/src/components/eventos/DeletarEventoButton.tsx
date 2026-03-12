@@ -12,7 +12,7 @@ export function DeletarEventoButton({ id }: { id: string }) {
         return (
             <button
                 onClick={() => setConfirm(true)}
-                className="flex items-center gap-1.5 text-xs text-zinc-600 hover:text-red-400 transition-colors"
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-red-400 transition-colors"
             >
                 <Trash2 className="w-3.5 h-3.5" />
                 Deletar
@@ -32,7 +32,7 @@ export function DeletarEventoButton({ id }: { id: string }) {
             </button>
             <button
                 onClick={() => setConfirm(false)}
-                className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
                 Não
             </button>

@@ -20,9 +20,9 @@ interface Props {
 function CustomTooltip({ active, payload, label }: any) {
     if (!active || !payload?.length) return null
     return (
-        <div className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm shadow-lg">
-            <p className="text-zinc-400 text-xs mb-1">{label}</p>
-            <p className="font-semibold" style={{ color: 'var(--cor-tema)' }}>{payload[0].value} check-ins</p>
+        <div className="glass-card border border-white/10 rounded-xl px-4 py-3 text-sm shadow-xl">
+            <p className="text-muted-foreground text-xs mb-1">{label}</p>
+            <p className="font-semibold text-primary">{payload[0].value} check-ins</p>
         </div>
     )
 }
@@ -31,29 +31,31 @@ export function CheckinsBarChart({ data, dataKey = 'dia', label = 'Check-ins por
     const maxVal = Math.max(...data.map(d => d.total), 1)
 
     return (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-            <p className="text-zinc-400 text-xs font-medium uppercase tracking-wide mb-4">{label}</p>
-            <ResponsiveContainer width="100%" height={220}>
+        <div className="glass-card border border-white/5 rounded-2xl p-6">
+            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-6">{label}</p>
+            <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                     <XAxis
                         dataKey={dataKey}
-                        tick={{ fill: '#71717a', fontSize: 11 }}
+                        tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }}
                         tickLine={false}
                         axisLine={false}
+                        dy={10}
                     />
                     <YAxis
-                        tick={{ fill: '#71717a', fontSize: 11 }}
+                        tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }}
                         tickLine={false}
                         axisLine={false}
                         allowDecimals={false}
+                        dx={-10}
                     />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--cor-tema-subtle)' }} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
                     <Bar dataKey="total" radius={[4, 4, 0, 0]}>
                         {data.map((entry, index) => (
                             <Cell
                                 key={index}
-                                fill={entry.total === maxVal ? 'var(--cor-tema)' : '#3f3f46'}
+                                fill={entry.total === maxVal ? 'var(--primary)' : 'var(--muted)'}
                             />
                         ))}
                     </Bar>

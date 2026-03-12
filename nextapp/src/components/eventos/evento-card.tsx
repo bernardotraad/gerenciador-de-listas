@@ -33,7 +33,7 @@ interface EventoCardProps {
 const STATUS_BADGE: Record<EventoStatus, string> = {
     Ativo: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
     Cancelado: 'bg-red-500/15 text-red-400 border-red-500/30',
-    Finalizado: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
+    Finalizado: 'bg-muted/50 text-muted-foreground border-border',
 }
 
 export function EventoCard(props: EventoCardProps) {
@@ -43,24 +43,24 @@ export function EventoCard(props: EventoCardProps) {
     const cancelado = props.status === 'Cancelado'
 
     return (
-        <div className={`bg-zinc-900 border rounded-xl p-5 flex flex-col gap-4 transition-all duration-200 ${
+        <div className={`glass-card border rounded-xl p-5 flex flex-col gap-4 transition-all duration-200 ${
             cancelado || props.status === 'Finalizado'
-                ? 'border-zinc-800 opacity-60'
-                : 'border-zinc-800 hover:border-zinc-600 hover:shadow-lg hover:shadow-black/20'
+                ? 'border-white/5 opacity-60'
+                : 'border-white/5 hover:border-white/20 hover:shadow-lg hover:shadow-black/20'
         }`}>
             {/* Header */}
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <p className="text-xs text-zinc-500 capitalize">{diaSemana}</p>
-                    <h3 className="font-semibold text-zinc-100 truncate">{props.nome}</h3>
-                    <p className="text-sm text-zinc-400 mt-0.5">{dataFormatada}</p>
+                    <p className="text-xs text-muted-foreground capitalize">{diaSemana}</p>
+                    <h3 className="font-semibold text-foreground truncate">{props.nome}</h3>
+                    <p className="text-sm text-muted-foreground mt-0.5">{dataFormatada}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1.5 shrink-0">
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${STATUS_BADGE[props.status]}`}>
                         {props.status}
                     </span>
                     {props.semana_numero && (
-                        <span className="text-zinc-600 text-xs">Sem. {props.semana_numero}</span>
+                        <span className="text-muted-foreground text-xs">Sem. {props.semana_numero}</span>
                     )}
                 </div>
             </div>
@@ -71,8 +71,7 @@ export function EventoCard(props: EventoCardProps) {
                     {props.listaTipos.map((tipo) => (
                         <span
                             key={tipo.id}
-                            className="text-xs font-medium px-2 py-0.5 rounded-full border"
-                            style={{ backgroundColor: 'var(--cor-tema-subtle)', color: 'var(--cor-tema)', borderColor: 'color-mix(in oklch, var(--cor-tema) 30%, transparent)' }}
+                            className="text-xs font-medium px-2 py-0.5 rounded-full border border-primary/30 bg-primary/10 text-primary"
                         >
                             {tipo.nome}
                         </span>
@@ -81,7 +80,7 @@ export function EventoCard(props: EventoCardProps) {
             )}
 
             {/* Info */}
-            <div className="flex items-center gap-4 text-sm text-zinc-400">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5" />
                     {props.hora_inicio.slice(0, 5)} – {props.hora_fim.slice(0, 5)}
@@ -94,14 +93,14 @@ export function EventoCard(props: EventoCardProps) {
 
             {/* Actions */}
             {cancelado ? (
-                <div className="pt-1 border-t border-zinc-800 flex gap-4">
+                <div className="pt-1 border-t border-border flex gap-4">
                     <DeletarEventoButton id={props.id} />
                 </div>
             ) : (
-                <div className="pt-1 border-t border-zinc-800 flex gap-4 flex-wrap">
+                <div className="pt-1 border-t border-border flex gap-4 flex-wrap">
                     <Link
                         href={`/admin/eventos/${props.id}`}
-                        className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[var(--cor-tema)] transition-colors"
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
                     >
                         <BarChart2 className="w-3.5 h-3.5" />
                         Overview

@@ -22,11 +22,9 @@ export default async function AdminLayout({
 
     const { data: boate } = await supabase
         .from('boates')
-        .select('id, nome, logo_url, cor_tema')
+        .select('id, nome, logo_url')
         .eq('id', profile.boate_id)
         .single()
-
-    const corTema = boate?.cor_tema ?? '#7c3aed'
 
     const { count: submissoesPendentes } = await supabase
         .from('guest_submissions')
@@ -34,10 +32,7 @@ export default async function AdminLayout({
         .eq('status', 'Pendente')
 
     return (
-        <div
-            className="min-h-screen [background-color:var(--cor-tema-fundo)]"
-            style={{ '--cor-tema': corTema } as React.CSSProperties}
-        >
+        <div className="min-h-screen bg-background">
             <TopBar
                 boateNome={boate?.nome ?? undefined}
                 boateLogoUrl={boate?.logo_url ?? null}

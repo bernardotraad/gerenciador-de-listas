@@ -96,7 +96,7 @@ export function TopBar({
 
     return (
         <>
-            <header className="fixed top-0 left-0 right-0 z-50 h-14 [background-color:var(--cor-tema-card)] [border-color:var(--cor-tema-borda)] border-b">
+            <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-background/40 backdrop-blur-xl border-b border-white/5 shadow-sm">
                 <div className="max-w-7xl mx-auto h-full flex items-center px-4 sm:px-6 lg:px-8 gap-4">
                 {/* Logo */}
                 <Link href={homeHref} className="flex items-center gap-2.5 shrink-0 group">
@@ -104,23 +104,22 @@ export function TopBar({
                         <img
                             src={boateLogoUrl}
                             alt="Logo"
-                            className="w-7 h-7 rounded-lg object-contain bg-zinc-800 p-0.5 group-hover:opacity-80 transition-opacity"
+                            className="w-8 h-8 rounded-lg object-contain bg-black/20 p-0.5 group-hover:opacity-80 transition-opacity border border-white/10"
                         />
                     ) : (
                         <div
-                            className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 group-hover:opacity-80 transition-opacity"
-                            style={{ backgroundColor: 'var(--cor-tema)' }}
+                            className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 group-hover:opacity-80 transition-opacity bg-primary/20 border border-primary/30 shadow-inner"
                         >
-                            <Users className="w-3.5 h-3.5 text-white" />
+                            <Users className="w-4 h-4 text-primary" />
                         </div>
                     )}
-                    <span className="font-semibold text-zinc-100 text-sm truncate max-w-[120px] group-hover:text-white transition-colors">
+                    <span className="font-semibold text-foreground text-sm truncate max-w-[120px] group-hover:text-primary transition-colors tracking-tight">
                         {boateNome ?? 'Lista VIP'}
                     </span>
                 </Link>
 
                 {/* Desktop nav links */}
-                <nav className="hidden md:flex items-center gap-1 flex-1">
+                <nav className="hidden lg:flex items-center gap-1.5 flex-1 ml-4">
                     {primaryItems.map((item) => {
                         const active = isActive(pathname, item.href)
                         const isSubmissoes = item.href === '/admin/submissoes'
@@ -128,18 +127,17 @@ export function TopBar({
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors hover:bg-zinc-800"
-                                style={active
-                                    ? { color: 'var(--cor-tema)', backgroundColor: 'var(--cor-tema-subtle)' }
-                                    : { color: '#a1a1aa' }
-                                }
+                                className={`relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
+                                    active 
+                                    ? 'bg-primary/10 text-primary hover:bg-primary/20 shadow-sm shadow-primary/5' 
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                                }`}
                             >
                                 <item.icon className="w-4 h-4 shrink-0" />
                                 {item.label}
                                 {isSubmissoes && submissoesPendentes > 0 && (
                                     <span
-                                        className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full text-[10px] font-bold text-white flex items-center justify-center px-1"
-                                        style={{ backgroundColor: 'var(--cor-tema)' }}
+                                        className="absolute -top-1 -right-1 min-w-[18px] h-4.5 rounded-full text-[10px] font-bold text-primary-foreground flex items-center justify-center px-1 shadow-md bg-primary ring-2 ring-background"
                                     >
                                         {submissoesPendentes > 99 ? '99+' : submissoesPendentes}
                                     </span>
@@ -154,13 +152,15 @@ export function TopBar({
                             <button
                                 type="button"
                                 onClick={() => setMaisOpen((v) => !v)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors cursor-pointer select-none"
+                                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer select-none ${
+                                    maisOpen ? 'bg-white/10 text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                                }`}
                             >
                                 Mais
                                 <ChevronDown className={`w-3.5 h-3.5 transition-transform ${maisOpen ? 'rotate-180' : ''}`} />
                             </button>
                             {maisOpen && (
-                                <div className="absolute top-full left-0 mt-1 w-52 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl py-1 z-10">
+                                <div className="absolute top-full left-0 mt-2 w-52 glass-card bg-background/95 rounded-xl shadow-2xl py-1.5 z-10 border border-white/10 origin-top-left animate-in fade-in zoom-in-95 duration-200">
                                     {secondaryItems.map((item) => {
                                         const active = isActive(pathname, item.href)
                                         return (
@@ -168,13 +168,11 @@ export function TopBar({
                                                 key={item.href}
                                                 href={item.href}
                                                 onClick={() => setMaisOpen(false)}
-                                                className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium transition-colors hover:bg-zinc-800"
-                                                style={active ? { color: 'var(--cor-tema)' } : { color: '#a1a1aa' }}
+                                                className={`flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-colors ${
+                                                    active ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                                                }`}
                                             >
-                                                <item.icon
-                                                    className="w-4 h-4 shrink-0"
-                                                    style={active ? { color: 'var(--cor-tema)' } : { color: '#71717a' }}
-                                                />
+                                                <item.icon className={`w-4 h-4 shrink-0 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
                                                 {item.label}
                                             </Link>
                                         )
@@ -187,28 +185,31 @@ export function TopBar({
                 </nav>
 
                 {/* Right: profile + logout */}
-                <div className="flex items-center gap-2 ml-auto">
+                <div className="flex items-center gap-3 ml-auto">
                     {/* Enviar Nomes — visível em desktop */}
                     {enviarNomesHref && (
                         <Link
                             href={enviarNomesHref}
                             title="Enviar lista de nomes"
-                            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+                            className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-emerald-400 bg-emerald-400/10 hover:bg-emerald-400/20 border border-emerald-400/20 transition-colors shadow-sm"
                         >
                             <Send className="w-4 h-4 shrink-0" />
-                            <span className="hidden lg:inline">Enviar Nomes</span>
+                            <span>Enviar Nomes</span>
                         </Link>
                     )}
-                    <Link href="/perfil" className="flex items-center gap-2" title="Meu perfil">
-                        <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-zinc-700 hover:ring-[var(--cor-tema)] transition-all">
+                    
+                    <div className="h-6 w-px bg-white/10 hidden lg:block mx-1"></div>
+
+                    <Link href="/perfil" className="flex items-center gap-2.5 group" title="Meu perfil">
+                        <div className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-transparent group-hover:ring-primary/50 transition-all border border-white/10">
                             {userAvatarUrl ? (
                                 <img src={userAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                             ) : (
-                                <span className="text-xs font-medium text-zinc-300">{initials}</span>
+                                <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors">{initials}</span>
                             )}
                         </div>
                         {userRole && (
-                            <span className="hidden lg:inline text-[10px] font-medium text-zinc-500 bg-zinc-800 px-1.5 py-0.5 rounded">
+                            <span className="hidden lg:inline text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full tracking-wide">
                                 {userRole}
                             </span>
                         )}
@@ -218,7 +219,7 @@ export function TopBar({
                         type="button"
                         onClick={handleLogout}
                         title="Sair"
-                        className="hidden sm:flex items-center gap-1.5 text-zinc-500 hover:text-zinc-200 text-sm transition-colors px-2 py-1.5 rounded-md hover:bg-zinc-800"
+                        className="hidden sm:flex items-center gap-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 text-sm transition-colors px-3 py-2 rounded-lg"
                     >
                         <LogOut className="w-4 h-4 shrink-0" />
                         <span className="hidden lg:inline">Sair</span>
@@ -228,7 +229,7 @@ export function TopBar({
                     <button
                         type="button"
                         onClick={() => setMobileOpen(true)}
-                        className="md:hidden p-1.5 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded-md transition-colors"
+                        className="lg:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-lg transition-colors border border-transparent hover:border-white/10"
                         aria-label="Abrir menu"
                     >
                         <Menu className="w-5 h-5" />
@@ -242,21 +243,24 @@ export function TopBar({
                 <SheetContent
                     side="left"
                     showCloseButton={false}
-                    className="bg-zinc-900 border-r border-zinc-800 w-72 p-0"
+                    className="bg-background/95 backdrop-blur-2xl border-r border-white/10 w-72 p-0 shadow-2xl"
                 >
-                    <SheetHeader className="px-4 pt-4 pb-2 flex-row items-center justify-between">
-                        <SheetTitle className="text-zinc-100 text-sm font-semibold">
+                    <SheetHeader className="px-5 pt-5 pb-4 flex-row items-center justify-between border-b border-white/5">
+                        <SheetTitle className="text-foreground text-base tracking-tight font-semibold flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center">
+                                <Users className="w-3 h-3 text-primary" />
+                            </div>
                             {boateNome ?? 'Lista VIP'}
                         </SheetTitle>
                         <button
                             onClick={() => setMobileOpen(false)}
-                            className="p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded-md transition-colors"
+                            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-white/10 rounded-lg transition-colors"
                         >
                             <X className="w-4 h-4" />
                         </button>
                     </SheetHeader>
 
-                    <nav className="px-2 pb-4 flex flex-col gap-0.5">
+                    <nav className="px-3 py-4 flex flex-col gap-1 overflow-y-auto max-h-[calc(100vh-80px)]">
                         {allMobileItems.map((item) => {
                             const active = isActive(pathname, item.href)
                             const isSubmissoes = item.href === '/admin/submissoes'
@@ -265,21 +269,19 @@ export function TopBar({
                                     key={item.href}
                                     href={item.href}
                                     onClick={() => setMobileOpen(false)}
-                                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
-                                    style={active
-                                        ? { color: 'var(--cor-tema)', backgroundColor: 'var(--cor-tema-subtle)' }
-                                        : { color: '#a1a1aa' }
-                                    }
+                                    className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all ${
+                                        active
+                                        ? 'text-primary bg-primary/10 shadow-inner'
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                                    }`}
                                 >
                                     <item.icon
-                                        className="w-4 h-4 shrink-0"
-                                        style={active ? { color: 'var(--cor-tema)' } : { color: '#71717a' }}
+                                        className={`w-4.5 h-4.5 shrink-0 ${active ? 'text-primary' : 'text-muted-foreground'}`}
                                     />
                                     <span className="flex-1">{item.label}</span>
                                     {isSubmissoes && submissoesPendentes > 0 && (
                                         <span
-                                            className="min-w-[18px] h-5 rounded-full text-[10px] font-bold text-white flex items-center justify-center px-1.5"
-                                            style={{ backgroundColor: 'var(--cor-tema)' }}
+                                            className="min-w-[20px] h-5 rounded-full text-[10px] font-bold text-primary-foreground flex items-center justify-center px-1.5 bg-primary shadow-sm"
                                         >
                                             {submissoesPendentes > 99 ? '99+' : submissoesPendentes}
                                         </span>
@@ -288,18 +290,18 @@ export function TopBar({
                             )
                         })}
 
-                        <div className="my-2 border-t border-zinc-800" />
+                        <div className="my-4 border-t border-white/5" />
 
                         <Link
                             href="/perfil"
                             onClick={() => setMobileOpen(false)}
-                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+                            className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
                         >
-                            <div className="w-4 h-4 rounded-full bg-zinc-700 flex items-center justify-center shrink-0 overflow-hidden">
+                            <div className="w-6 h-6 rounded-full bg-black/40 border border-white/10 flex items-center justify-center shrink-0 overflow-hidden">
                                 {userAvatarUrl ? (
                                     <img src={userAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
-                                    <span className="text-[9px] font-medium text-zinc-300">{initials}</span>
+                                    <span className="text-[10px] font-semibold text-muted-foreground">{initials}</span>
                                 )}
                             </div>
                             Meu perfil
@@ -308,9 +310,9 @@ export function TopBar({
                         <button
                             type="button"
                             onClick={handleLogout}
-                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+                            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors mt-auto"
                         >
-                            <LogOut className="w-4 h-4 shrink-0 text-zinc-600" />
+                            <LogOut className="w-4.5 h-4.5 shrink-0" />
                             Sair
                         </button>
                     </nav>

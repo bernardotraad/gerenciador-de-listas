@@ -39,22 +39,22 @@ export default async function AdminDashboard() {
 
     if (!geralData || !semanaData || !mesData) {
         return (
-            <div className="flex items-center justify-center h-64 text-zinc-500">
+            <div className="flex items-center justify-center h-64 text-muted-foreground">
                 Erro ao carregar dados do dashboard.
             </div>
         )
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--cor-tema-subtle)' }}>
-                    <LayoutDashboard className="w-5 h-5" style={{ color: 'var(--cor-tema)' }} />
+        <div className="space-y-8">
+            <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center border border-primary/30 shadow-inner">
+                    <LayoutDashboard className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-zinc-50">Dashboard</h1>
-                    <p className="text-zinc-400 text-sm mt-0.5">
-                        Bem-vindo, <span className="text-zinc-200 font-medium">{profile?.nome}</span>
+                    <h1 className="text-3xl font-bold text-foreground tracking-tight">Dashboard</h1>
+                    <p className="text-muted-foreground text-sm mt-0.5">
+                        Bem-vindo(a), <span className="text-foreground font-medium">{profile?.nome}</span>
                     </p>
                 </div>
             </div>

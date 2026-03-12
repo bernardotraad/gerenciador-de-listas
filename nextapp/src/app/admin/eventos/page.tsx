@@ -68,8 +68,8 @@ export default async function EventosPage() {
             {/* Header */}
             <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
-                    <h1 className="text-2xl font-bold text-zinc-50">Eventos</h1>
-                    <p className="text-zinc-400 text-sm mt-1">
+                    <h1 className="text-2xl font-bold text-foreground">Eventos</h1>
+                    <p className="text-muted-foreground text-sm mt-1">
                         {instancias?.length ?? 0} evento(s) a partir de hoje
                     </p>
                 </div>
@@ -81,21 +81,21 @@ export default async function EventosPage() {
 
             {/* Lista */}
             {Object.keys(porMes).length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-4 py-24 border border-dashed border-zinc-800 rounded-2xl text-center">
-                    <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center">
-                        <CalendarDays className="w-6 h-6 text-zinc-500" />
+                <div className="flex flex-col items-center justify-center gap-4 py-24 glass-card border border-dashed border-white/10 rounded-2xl text-center shadow-xl">
+                    <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
+                        <CalendarDays className="w-7 h-7 text-muted-foreground" />
                     </div>
                     <div>
-                        <p className="text-zinc-300 font-medium">Nenhum evento cadastrado</p>
-                        <p className="text-zinc-500 text-sm mt-1">
+                        <p className="text-foreground font-semibold text-lg">Nenhum evento cadastrado</p>
+                        <p className="text-muted-foreground text-sm mt-1.5 font-medium">
                             Clique em &ldquo;Novo Evento&rdquo; para criar o primeiro.
                         </p>
                     </div>
                 </div>
             ) : (
                 Object.entries(porMes).map(([mes, eventosMes]) => (
-                    <section key={mes} className="space-y-3">
-                        <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest capitalize">
+                    <section key={mes} className="space-y-4">
+                        <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest pl-1">
                             {mes}
                         </h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

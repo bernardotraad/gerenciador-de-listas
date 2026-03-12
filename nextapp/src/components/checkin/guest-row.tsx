@@ -79,7 +79,7 @@ export function GuestRow({
             ? 'bg-amber-500/10 border-amber-500/40'
             : presente
             ? 'bg-emerald-500/5 border-emerald-500/20'
-            : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
+            : 'glass-card border-white/5 hover:border-white/20'
 
     return (
         <div
@@ -88,7 +88,7 @@ export function GuestRow({
             <div className="flex items-center gap-3 min-w-0">
                 <div
                     className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm font-semibold ${
-                        presente ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-400'
+                        presente ? 'bg-emerald-500/20 text-emerald-400' : 'bg-muted/50 text-muted-foreground'
                     }`}
                 >
                     {nome.charAt(0).toUpperCase()}
@@ -96,7 +96,7 @@ export function GuestRow({
                 <div className="min-w-0">
                     <p
                         className={`text-sm font-medium truncate ${
-                            presente ? 'text-emerald-300' : 'text-zinc-100'
+                            presente ? 'text-emerald-300' : 'text-foreground'
                         }`}
                     >
                         {nome}
@@ -114,7 +114,7 @@ export function GuestRow({
                     {!presente && !feedback && isVip && horaVipLimite && (
                         <p
                             className={`text-xs flex items-center gap-1 ${
-                                vipPassouLimite ? 'text-red-400' : 'text-zinc-500'
+                                vipPassouLimite ? 'text-red-400' : 'text-muted-foreground'
                             }`}
                         >
                             <Clock className="w-3 h-3" />
@@ -132,8 +132,7 @@ export function GuestRow({
             <div className="flex items-center gap-2 shrink-0">
                 {listaTipoNome && (
                     <span
-                        className="text-xs font-medium px-1.5 py-0.5 rounded-full border"
-                        style={{ backgroundColor: 'var(--cor-tema-subtle)', color: 'var(--cor-tema)', borderColor: 'var(--cor-tema-subtle)' }}
+                        className="text-xs font-medium px-1.5 py-0.5 rounded-full border border-primary/30 bg-primary/10 text-primary"
                     >
                         {listaTipoNome}
                     </span>
@@ -143,7 +142,7 @@ export function GuestRow({
                     <button
                         onClick={handleCheckin}
                         disabled={pendingIn}
-                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 [background-color:var(--cor-tema)] hover:[background-color:var(--cor-tema-hover)] disabled:opacity-50 text-white rounded-lg transition-colors"
+                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground rounded-lg transition-colors"
                     >
                         {pendingIn ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -156,7 +155,7 @@ export function GuestRow({
                     <button
                         onClick={handleSaida}
                         disabled={pendingOut}
-                        className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-red-400 disabled:opacity-50 transition-colors px-2 py-1.5"
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-red-400 disabled:opacity-50 transition-colors px-2 py-1.5"
                     >
                         {pendingOut ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />

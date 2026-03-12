@@ -67,22 +67,22 @@ export function EditarEventoDialog(props: EditarEventoDialogProps) {
         })
     }
 
-    const inputCls = "w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cor-tema)] focus:border-transparent transition-all placeholder-zinc-500"
-    const labelCls = "block text-xs font-medium text-zinc-400 mb-1"
+    const inputCls = "w-full px-3 py-2 bg-muted/50 border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-muted-foreground"
+    const labelCls = "block text-xs font-medium text-muted-foreground mb-1"
     const errorCls = "text-red-400 text-xs mt-1"
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <button className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[var(--cor-tema)] transition-colors">
+                <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors">
                     <Pencil className="w-3.5 h-3.5" />
                     Editar
                 </button>
             </DialogTrigger>
 
-            <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 max-w-lg">
+            <DialogContent className="glass-card border-white/5 text-foreground max-w-lg">
                 <DialogHeader>
-                    <DialogTitle className="text-zinc-50">Editar Evento</DialogTitle>
+                    <DialogTitle className="text-foreground">Editar Evento</DialogTitle>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
@@ -150,9 +150,9 @@ export function EditarEventoDialog(props: EditarEventoDialogProps) {
                                                             : field.value.filter((v) => v !== tipo.id)
                                                         field.onChange(next)
                                                     }}
-                                                    className="accent-[var(--cor-tema)] w-4 h-4 rounded"
+                                                    className="accent-primary w-4 h-4 rounded"
                                                 />
-                                                <span className="text-sm text-zinc-300 group-hover:text-zinc-100 transition-colors">
+                                                <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                                                     {tipo.nome}
                                                 </span>
                                             </label>
@@ -167,25 +167,25 @@ export function EditarEventoDialog(props: EditarEventoDialogProps) {
                     </div>
 
                     {/* Escopo */}
-                    <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-3 space-y-2">
+                    <div className="bg-muted/30 border border-border/50 rounded-lg p-3 space-y-2">
                         <p className={labelCls}>Aplicar alterações em</p>
                         <label className="flex items-center gap-2 cursor-pointer">
                             <input
                                 type="radio"
                                 value="instancia"
                                 {...register('escopo')}
-                                className="accent-[var(--cor-tema)]"
+                                className="accent-primary"
                             />
-                            <span className="text-sm text-zinc-300">Somente este evento</span>
+                            <span className="text-sm text-muted-foreground">Somente este evento</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
                             <input
                                 type="radio"
                                 value="futuras"
                                 {...register('escopo')}
-                                className="accent-[var(--cor-tema)]"
+                                className="accent-primary"
                             />
-                            <span className="text-sm text-zinc-300">Este e todos os futuros</span>
+                            <span className="text-sm text-muted-foreground">Este e todos os futuros</span>
                         </label>
                     </div>
 
@@ -201,14 +201,14 @@ export function EditarEventoDialog(props: EditarEventoDialogProps) {
                         <button
                             type="button"
                             onClick={() => setOpen(false)}
-                            className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
+                            className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
                             disabled={pending}
-                            className="flex items-center gap-2 px-4 py-2 [background-color:var(--cor-tema)] hover:[background-color:var(--cor-tema-hover)] disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground text-sm font-semibold rounded-lg transition-colors"
                         >
                             {pending && <Loader2 className="w-4 h-4 animate-spin" />}
                             {pending ? 'Salvando...' : 'Salvar'}

@@ -53,23 +53,26 @@ export function MesTab({ initialData, initialMes, initialAno }: Props) {
     return (
         <div className="space-y-6">
             {/* Seletor de mês */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between glass-card border border-white/5 rounded-2xl p-4">
                 <button
                     onClick={() => navegar('anterior')}
                     disabled={isPending}
-                    className="w-8 h-8 rounded-lg border border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition-colors disabled:opacity-50"
+                    className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors disabled:opacity-50 hover:border-white/20 shadow-sm"
                 >
-                    <ChevronLeft className="w-4 h-4" />
+                    <ChevronLeft className="w-5 h-5" />
                 </button>
-                <span className="text-sm font-medium text-zinc-300 min-w-[140px] text-center">
-                    {isPending ? 'Carregando...' : `${MESES[mes - 1]} ${ano}`}
-                </span>
+                <div className="flex flex-col items-center">
+                    <span className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-0.5">Visão Mensal</span>
+                    <span className="text-sm font-medium text-foreground min-w-[140px] text-center">
+                        {isPending ? 'Carregando...' : `${MESES[mes - 1]} ${ano}`}
+                    </span>
+                </div>
                 <button
                     onClick={() => navegar('proximo')}
                     disabled={isPending}
-                    className="w-8 h-8 rounded-lg border border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition-colors disabled:opacity-50"
+                    className="w-9 h-9 rounded-xl border border-white/10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors disabled:opacity-50 hover:border-white/20 shadow-sm"
                 >
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-5 h-5" />
                 </button>
             </div>
 
@@ -80,40 +83,47 @@ export function MesTab({ initialData, initialMes, initialAno }: Props) {
             />
 
             {/* Eventos do mês */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-                <div className="px-5 py-4 border-b border-zinc-800">
-                    <p className="text-zinc-400 text-xs font-medium uppercase tracking-wide">
+            <div className="glass-card border border-white/5 rounded-2xl overflow-hidden shadow-xl">
+                <div className="px-6 py-5 border-b border-white/5 bg-black/10">
+                    <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
                         Eventos de {MESES[mes - 1]}
                     </p>
                 </div>
                 {data.eventosData.length === 0 ? (
-                    <div className="px-5 py-8 text-center text-zinc-600 text-sm">Nenhum evento neste mês</div>
+                    <div className="px-6 py-10 text-center text-muted-foreground text-sm font-medium">Nenhum evento neste mês</div>
                 ) : (
-                    <div className="divide-y divide-zinc-800">
+                    <div className="divide-y divide-white/5">
                         {data.eventosData.map(evento => (
-                            <div key={evento.id} className="px-5 py-4 flex items-center gap-4">
+                            <div key={evento.id} className="px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-4 hover:bg-white/[0.02] transition-colors">
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-zinc-200 truncate">{evento.nome}</p>
-                                    <p className="text-xs text-zinc-500 mt-0.5">{evento.data}</p>
+                                    <p className="text-sm font-semibold text-foreground truncate">{evento.nome}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">{evento.data}</p>
                                 </div>
                                 <div className="text-right shrink-0">
-                                    <p className="text-sm font-semibold text-zinc-100">{evento.checkins}</p>
-                                    <p className="text-xs text-zinc-500">check-ins</p>
+                                    <p className="text-sm font-bold text-foreground">{evento.checkins}</p>
+                                    <p className="text-xs text-muted-foreground">check-ins</p>
                                 </div>
-                                <div className="w-24 shrink-0">
-                                    <div className="flex items-center justify-between mb-1">
-                                        <span className="text-xs text-zinc-500">{evento.ocupacao}%</span>
+                                <div className="w-full sm:w-28 shrink-0">
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <span className="text-[10px] uppercase font-bold text-muted-foreground">Ocupação</span>
+                                        <span className="text-xs font-medium text-foreground">{evento.ocupacao}%</span>
                                     </div>
-                                    <div className="w-full bg-zinc-800 rounded-full h-1.5">
+                                    <div className="w-full bg-black/40 rounded-full h-2 border border-white/5">
                                         <div
-                                            className="h-1.5 rounded-full transition-all"
-                                            style={{ width: `${Math.min(evento.ocupacao, 100)}%`, backgroundColor: 'var(--cor-tema)' }}
+                                            className="h-full rounded-full transition-all bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]"
+                                            style={{ width: `${Math.min(evento.ocupacao, 100)}%` }}
                                         />
                                     </div>
                                 </div>
-                                <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${evento.status === 'Ativo' ? 'bg-emerald-500/10 text-emerald-400' : evento.status === 'Finalizado' ? 'bg-zinc-700 text-zinc-400' : 'bg-red-500/10 text-red-400'}`}>
-                                    {evento.status}
-                                </span>
+                                <div className="shrink-0 flex sm:justify-end">
+                                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
+                                        evento.status === 'Ativo' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                                        : evento.status === 'Finalizado' ? 'bg-black/20 text-muted-foreground border-white/10' 
+                                        : 'bg-red-500/10 text-red-400 border-red-500/20'
+                                    }`}>
+                                        {evento.status}
+                                    </span>
+                                </div>
                             </div>
                         ))}
                     </div>

@@ -7,14 +7,21 @@ interface Props {
     label?: string
 }
 
-const PALETTE = ['var(--cor-tema)', '#6366f1', '#a78bfa', '#7c3aed', '#4f46e5', '#c4b5fd']
+const PALETTE = [
+    'var(--primary)', 
+    '#6366f1', 
+    '#a78bfa', 
+    '#7c3aed', 
+    '#4f46e5', 
+    '#c4b5fd'
+]
 
 function CustomTooltip({ active, payload }: any) {
     if (!active || !payload?.length) return null
     return (
-        <div className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm shadow-lg">
-            <p className="text-zinc-300 font-medium">{payload[0].name}</p>
-            <p className="font-semibold" style={{ color: 'var(--cor-tema)' }}>{payload[0].value} check-ins</p>
+        <div className="glass-card border border-white/10 rounded-xl px-4 py-3 text-sm shadow-xl">
+            <p className="text-foreground font-medium mb-1">{payload[0].name}</p>
+            <p className="font-semibold text-primary">{payload[0].value} check-ins</p>
         </div>
     )
 }
@@ -22,16 +29,16 @@ function CustomTooltip({ active, payload }: any) {
 export function ListaTipoDonutChart({ data, label = 'Check-ins por lista' }: Props) {
     if (!data.length) {
         return (
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex items-center justify-center h-[290px]">
-                <p className="text-zinc-600 text-sm">Sem dados de check-in</p>
+            <div className="glass-card border border-white/5 rounded-2xl p-6 flex items-center justify-center h-[290px]">
+                <p className="text-muted-foreground text-sm font-medium">Sem dados de check-in</p>
             </div>
         )
     }
 
     return (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-            <p className="text-zinc-400 text-xs font-medium uppercase tracking-wide mb-4">{label}</p>
-            <ResponsiveContainer width="100%" height={220}>
+        <div className="glass-card border border-white/5 rounded-2xl p-6">
+            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-6">{label}</p>
+            <ResponsiveContainer width="100%" height={260}>
                 <PieChart>
                     <Pie
                         data={data}
@@ -39,9 +46,9 @@ export function ListaTipoDonutChart({ data, label = 'Check-ins por lista' }: Pro
                         nameKey="nome"
                         cx="50%"
                         cy="50%"
-                        innerRadius={55}
-                        outerRadius={85}
-                        paddingAngle={3}
+                        innerRadius={65}
+                        outerRadius={95}
+                        paddingAngle={4}
                         strokeWidth={0}
                     >
                         {data.map((_, i) => (
@@ -50,7 +57,7 @@ export function ListaTipoDonutChart({ data, label = 'Check-ins por lista' }: Pro
                     </Pie>
                     <Tooltip content={<CustomTooltip />} />
                     <Legend
-                        formatter={(value) => <span className="text-zinc-400 text-xs">{value}</span>}
+                        formatter={(value) => <span className="text-muted-foreground text-xs">{value}</span>}
                         iconType="circle"
                         iconSize={8}
                     />

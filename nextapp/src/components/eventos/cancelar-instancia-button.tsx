@@ -16,7 +16,7 @@ export function CancelarInstanciaButton({ id }: { id: string }) {
         <button
             onClick={handleClick}
             disabled={pending}
-            className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-red-400 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-red-400 transition-colors disabled:opacity-50"
         >
             {pending
                 ? <Loader2 className="w-3.5 h-3.5 animate-spin" />

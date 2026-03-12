@@ -75,23 +75,23 @@ function SortableItem({
             style={style}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-opacity ${
                 tipo.ativo
-                    ? 'bg-zinc-900 border-zinc-800'
-                    : 'bg-zinc-900/50 border-zinc-800/50 opacity-60'
+                    ? 'glass-card border-white/5'
+                    : 'bg-muted/30 border-border/50 opacity-60'
             }`}
         >
             {/* Drag handle */}
             <button
                 {...attributes}
                 {...listeners}
-                className="text-zinc-600 hover:text-zinc-400 cursor-grab active:cursor-grabbing touch-none"
+                className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none"
                 tabIndex={-1}
             >
                 <GripVertical className="w-4 h-4" />
             </button>
 
             {/* Icon */}
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--cor-tema-subtle)' }}>
-                <Tag className="w-3.5 h-3.5" style={{ color: 'var(--cor-tema)' }} />
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-primary/10">
+                <Tag className="w-3.5 h-3.5 text-primary" />
             </div>
 
             {/* Nome (inline edit) */}
@@ -103,7 +103,7 @@ function SortableItem({
                             value={editNome}
                             onChange={(e) => setEditNome(e.target.value)}
                             maxLength={100}
-                            className="flex-1 px-2.5 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cor-tema)] focus:border-transparent"
+                            className="flex-1 px-2.5 py-1.5 bg-muted/50 border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') onEditar(tipo.id, editNome)
                                 if (e.key === 'Escape') cancelEdit()
@@ -118,14 +118,14 @@ function SortableItem({
                         </button>
                         <button
                             onClick={cancelEdit}
-                            className="p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded-md transition-colors"
+                            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
                             title="Cancelar"
                         >
                             <X className="w-3.5 h-3.5" />
                         </button>
                     </div>
                 ) : (
-                    <p className="text-sm font-medium text-zinc-100 truncate">{tipo.nome}</p>
+                    <p className="text-sm font-medium text-foreground truncate">{tipo.nome}</p>
                 )}
             </div>
 
@@ -135,7 +135,7 @@ function SortableItem({
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${
                         tipo.ativo
                             ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                            : 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30'
+                            : 'bg-muted/50 text-muted-foreground border-border'
                     }`}>
                         {tipo.ativo ? 'Ativo' : 'Inativo'}
                     </span>
@@ -143,7 +143,7 @@ function SortableItem({
                     <button
                         onClick={() => onToggle(tipo.id, tipo.ativo)}
                         disabled={togglingId === tipo.id}
-                        className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-50 px-2 py-1 rounded-md hover:bg-zinc-800"
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 px-2 py-1 rounded-md hover:bg-muted/50"
                     >
                         {togglingId === tipo.id
                             ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -153,7 +153,7 @@ function SortableItem({
 
                     <button
                         onClick={startEdit}
-                        className="p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded-md transition-colors"
+                        className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md transition-colors"
                         title="Editar"
                     >
                         <Pencil className="w-3.5 h-3.5" />
@@ -171,7 +171,7 @@ function SortableItem({
                             </button>
                             <button
                                 onClick={() => setConfirmDeleteId(null)}
-                                className="text-xs text-zinc-500 hover:text-zinc-300 px-1.5 py-1 rounded hover:bg-zinc-800 transition-colors"
+                                className="text-xs text-muted-foreground hover:text-foreground px-1.5 py-1 rounded hover:bg-muted/50 transition-colors"
                             >
                                 Não
                             </button>
@@ -179,7 +179,7 @@ function SortableItem({
                     ) : (
                         <button
                             onClick={() => setConfirmDeleteId(tipo.id)}
-                            className="p-1.5 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
+                            className="p-1.5 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 rounded-md transition-colors"
                             title="Excluir"
                         >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -269,8 +269,8 @@ export function ListaTiposManager({ tipos: tiposInicial }: ListaTiposManagerProp
     return (
         <div className="space-y-6 max-w-xl">
             {/* Criar novo tipo */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                <h2 className="text-sm font-semibold text-zinc-300 mb-3">Novo tipo de lista</h2>
+            <div className="glass-card border-white/5 rounded-xl p-5">
+                <h2 className="text-sm font-semibold text-foreground mb-3">Novo tipo de lista</h2>
                 <form onSubmit={handleCriar} className="flex gap-2">
                     <input
                         type="text"
@@ -278,12 +278,12 @@ export function ListaTiposManager({ tipos: tiposInicial }: ListaTiposManagerProp
                         onChange={(e) => setNome(e.target.value)}
                         placeholder="Ex: Lista Aniversariantes"
                         maxLength={100}
-                        className="flex-1 px-3.5 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-100 text-sm placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-[var(--cor-tema)] focus:border-transparent transition-all"
+                        className="flex-1 px-3.5 py-2.5 bg-muted/50 border border-border rounded-lg text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                     />
                     <button
                         type="submit"
                         disabled={pendingCreate || nome.trim().length < 2}
-                        className="flex items-center gap-2 px-4 py-2 [background-color:var(--cor-tema)] hover:[background-color:var(--cor-tema-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground text-sm font-semibold rounded-lg transition-colors"
                     >
                         {pendingCreate
                             ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -300,9 +300,9 @@ export function ListaTiposManager({ tipos: tiposInicial }: ListaTiposManagerProp
             {/* Lista de tipos com drag-and-drop */}
             <div className="space-y-2">
                 {tipos.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center gap-3 py-16 border border-dashed border-zinc-800 rounded-xl text-center">
-                        <Tag className="w-8 h-8 text-zinc-600" />
-                        <p className="text-zinc-500 text-sm">Nenhum tipo de lista criado ainda</p>
+                    <div className="flex flex-col items-center justify-center gap-3 py-16 border border-dashed border-border rounded-xl text-center">
+                        <Tag className="w-8 h-8 text-muted-foreground" />
+                        <p className="text-muted-foreground text-sm">Nenhum tipo de lista criado ainda</p>
                     </div>
                 ) : (
                     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

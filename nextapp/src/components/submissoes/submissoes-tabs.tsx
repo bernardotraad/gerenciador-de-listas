@@ -43,13 +43,13 @@ export function SubmissoesTabs({ submissoes }: SubmissoesTabs) {
     return (
         <div className="space-y-6">
             {/* Tab bar */}
-            <div className="flex gap-1 bg-zinc-900 border border-zinc-800 rounded-xl p-1 w-fit">
+            <div className="flex gap-1 glass-card border-white/5 p-1 w-fit">
                 <button
                     onClick={() => setTab('pendentes')}
                     className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                         tab === 'pendentes'
-                            ? 'bg-zinc-700 text-zinc-100'
-                            : 'text-zinc-400 hover:text-zinc-200'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
                     }`}
                 >
                     Pendentes ({pendentesItems.length})
@@ -58,8 +58,8 @@ export function SubmissoesTabs({ submissoes }: SubmissoesTabs) {
                     onClick={() => setTab('historico')}
                     className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                         tab === 'historico'
-                            ? 'bg-zinc-700 text-zinc-100'
-                            : 'text-zinc-400 hover:text-zinc-200'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
                     }`}
                 >
                     Histórico ({historicoItems.length})
@@ -68,12 +68,12 @@ export function SubmissoesTabs({ submissoes }: SubmissoesTabs) {
 
             {/* Content */}
             {currentItems.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-4 py-24 border border-dashed border-zinc-800 rounded-2xl text-center">
-                    <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center">
-                        <InboxIcon className="w-6 h-6 text-zinc-500" />
+                <div className="flex flex-col items-center justify-center gap-4 py-24 border border-dashed border-border rounded-2xl text-center">
+                    <div className="w-12 h-12 rounded-xl bg-muted/50 flex items-center justify-center">
+                        <InboxIcon className="w-6 h-6 text-muted-foreground/50" />
                     </div>
                     <div>
-                        <p className="text-zinc-300 font-medium">
+                        <p className="text-foreground font-medium">
                             {tab === 'pendentes' ? 'Nenhuma submissão pendente' : 'Nenhum histórico ainda'}
                         </p>
                     </div>
@@ -84,7 +84,7 @@ export function SubmissoesTabs({ submissoes }: SubmissoesTabs) {
                     if (items.length === 0) return null
                     return (
                         <section key={status} className="space-y-3">
-                            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest">
+                            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
                                 {status} ({items.length})
                             </h2>
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
